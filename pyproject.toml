@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "judicex-memory-os"
+version = "0.2.0"
+description = "Legal Memory OS with CLI, MCP stdio server, Ollama agent, and Flask web UI."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Judicex contributors" },
+]
+dependencies = [
+    "Flask>=3.0,<4",
+    "Pillow>=10,<12",
+    "pypdf>=4,<7",
+    "python-docx>=1.1,<2",
+]
+
+[project.optional-dependencies]
+crypto = [
+    "cryptography>=42,<46",
+]
+test = [
+    "playwright>=1.50,<2",
+]
+ocr = [
+    "PyMuPDF>=1.24,<2",
+]
+
+[project.scripts]
+judicex = "judicex_memory_os.cli:main"
+judicex-mcp = "judicex_memory_os.mcp_stdio:main"
+judicex-agent = "judicex_memory_os.ollama_agent:main"
+judicex-web = "judicex_memory_os.web_app:main"
+
+[tool.setuptools.packages.find]
+include = ["judicex_memory_os*"]
+
+[tool.setuptools.package-data]
+judicex_memory_os = [
+    "skills/*.md",
+    "evals/*.json",
+    "evals/gold/*.json",
+    "workflow_packs/*.json",
+    "templates/*.html",
+    "templates/atti/*.json",
+    "static/*.js",
+]
