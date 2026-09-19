@@ -1,0 +1,104 @@
+{
+  "id": "core_civile_recupero_crediti",
+  "version": "2026-04-25.1",
+  "description": "Core deterministic evaluation suite for civil debt recovery and decreto ingiuntivo retrieval.",
+  "cases": [
+    {
+      "id": "decreto_ingiuntivo_notifica_opposizione_termini",
+      "area": "civile",
+      "question": "Entro quanti giorni il decreto ingiuntivo va notificato al debitore dopo la sua emissione, e una volta notificato quanti giorni ha il debitore per proporre opposizione?",
+      "doc_k": 6,
+      "entity_k": 8,
+      "requires": {
+        "documents": [
+          "normattiva:civile_recupero_crediti:cpc_art644",
+          "normattiva:civile_recupero_crediti:cpc_art641"
+        ],
+        "source_terms": [
+          {
+            "document_id": "normattiva:civile_recupero_crediti:cpc_art644",
+            "contains": ["sessanta giorni", "novanta giorni", "dalla pronuncia"]
+          },
+          {
+            "document_id": "normattiva:civile_recupero_crediti:cpc_art641",
+            "contains": ["quaranta giorni", "opposizione"]
+          }
+        ],
+        "atoms": [
+          {
+            "document_id": "normattiva:civile_recupero_crediti:cpc_art644",
+            "atom_type": "deadline",
+            "action": "notificazione",
+            "value": "60",
+            "unit": "giorni"
+          },
+          {
+            "document_id": "normattiva:civile_recupero_crediti:cpc_art644",
+            "atom_type": "deadline",
+            "action": "notificazione",
+            "value": "90",
+            "unit": "giorni"
+          },
+          {
+            "document_id": "normattiva:civile_recupero_crediti:cpc_art641",
+            "atom_type": "deadline",
+            "action": "opposizione",
+            "value": "40",
+            "unit": "giorni"
+          }
+        ]
+      }
+    },
+    {
+      "id": "decreto_ingiuntivo_condizioni_ammissibilita",
+      "area": "civile",
+      "question": "Quali sono le condizioni principali per ottenere un decreto ingiuntivo per un credito pecuniario?",
+      "doc_k": 6,
+      "entity_k": 8,
+      "requires": {
+        "documents": [
+          "normattiva:civile_recupero_crediti:cpc_art633",
+          "normattiva:civile_recupero_crediti:cpc_art634"
+        ],
+        "source_terms": [
+          {
+            "document_id": "normattiva:civile_recupero_crediti:cpc_art633",
+            "contains": ["somma liquida di danaro", "prova scritta"]
+          },
+          {
+            "document_id": "normattiva:civile_recupero_crediti:cpc_art634",
+            "contains": ["prove scritte"]
+          }
+        ],
+        "atoms": []
+      }
+    },
+    {
+      "id": "opposizione_tardiva_limite_primo_atto_esecuzione",
+      "area": "civile",
+      "question": "Quando è ammessa l'opposizione tardiva al decreto ingiuntivo e qual è il limite dopo il primo atto di esecuzione?",
+      "doc_k": 6,
+      "entity_k": 8,
+      "requires": {
+        "documents": [
+          "normattiva:civile_recupero_crediti:cpc_art650"
+        ],
+        "source_terms": [
+          {
+            "document_id": "normattiva:civile_recupero_crediti:cpc_art650",
+            "contains": ["opposizione", "dieci giorni", "primo atto di esecuzione"]
+          }
+        ],
+        "atoms": [
+          {
+            "document_id": "normattiva:civile_recupero_crediti:cpc_art650",
+            "atom_type": "deadline",
+            "action": "opposizione",
+            "value": "10",
+            "unit": "giorni"
+          }
+        ]
+      }
+    }
+  ]
+}

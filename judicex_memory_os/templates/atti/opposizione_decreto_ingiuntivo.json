@@ -1,0 +1,31 @@
+{
+  "name": "opposizione_decreto_ingiuntivo",
+  "title": "Atto di citazione in opposizione a decreto ingiuntivo",
+  "required_articles": ["641", "645", "647"],
+  "required_params": [
+    "opponente",
+    "opposto",
+    "tribunale",
+    "decreto_numero",
+    "data_notifica",
+    "motivi_opposizione"
+  ],
+  "sections": [
+    {
+      "heading": "On.le Tribunale di {tribunale}",
+      "body": "L'opponente {opponente} propone opposizione al decreto ingiuntivo n. {decreto_numero}, notificato in data {data_notifica}, emesso a favore di {opposto}."
+    },
+    {
+      "heading": "Tempestività",
+      "body": "L'opposizione è proposta entro il termine di legge, in conformità con quanto disposto dall'{ARTICLES.641} e dall'{ARTICLES.645}; ne consegue che il decreto non può divenire esecutivo per mancata opposizione ai sensi dell'{ARTICLES.647}."
+    },
+    {
+      "heading": "Motivi di opposizione",
+      "body": "{motivi_opposizione}"
+    },
+    {
+      "heading": "PQM",
+      "body": "Si chiede revoca del decreto ingiuntivo opposto, con condanna alle spese. Si richiamano: {ARTICLE_BLOCK}."
+    }
+  ]
+}

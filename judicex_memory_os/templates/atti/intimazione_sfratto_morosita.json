@@ -1,0 +1,32 @@
+{
+  "name": "intimazione_sfratto_morosita",
+  "title": "Intimazione di sfratto per morosità e contestuale citazione per la convalida",
+  "required_articles": ["658", "660", "663"],
+  "required_params": [
+    "locatore",
+    "conduttore",
+    "immobile",
+    "canone_mensile",
+    "mensilita_dovute",
+    "totale_dovuto",
+    "tribunale"
+  ],
+  "sections": [
+    {
+      "heading": "On.le Tribunale di {tribunale}",
+      "body": "Il locatore {locatore}, conv. p.v., intima al conduttore {conduttore} sfratto per morosità ai sensi dell'{ARTICLES.658}."
+    },
+    {
+      "heading": "Fatti",
+      "body": "Il conduttore è inadempiente al pagamento del canone relativo all'immobile {immobile}; il canone mensile è di euro {canone_mensile} e risultano impagate {mensilita_dovute} mensilità per un totale di euro {totale_dovuto}, oltre eventuali oneri accessori."
+    },
+    {
+      "heading": "Convocazione e convalida",
+      "body": "Il conduttore è citato a comparire all'udienza che verrà fissata, con avvertimento che, in caso di mancata opposizione, il giudice convaliderà lo sfratto secondo l'{ARTICLES.663}. L'intimazione è notificata in ottemperanza ai requisiti formali dell'{ARTICLES.660}."
+    },
+    {
+      "heading": "Conclusioni",
+      "body": "Si chiede convalida dello sfratto per morosità, ordine di rilascio dell'immobile, condanna al pagamento della morosità maturata e maturanda, oltre interessi e spese. Si richiamano: {ARTICLE_BLOCK}."
+    }
+  ]
+}

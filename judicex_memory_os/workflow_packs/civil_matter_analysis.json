@@ -1,0 +1,175 @@
+{
+  "schema_version": "1.0",
+  "id": "civil_matter_analysis",
+  "version": "2026-04-26.1",
+  "label": "Civil matter analysis workflow pack",
+  "default_profile_id": "generic_case_file_review",
+  "profiles": [
+    {
+      "id": "opposition_to_injunction",
+      "label": "Opposizione a decreto ingiuntivo",
+      "match_terms": ["opposizione", "opporre", "decreto ingiuntivo", "ingiunzione", "intimato"],
+      "requirements": [
+        {
+          "id": "decree_document",
+          "label": "Decreto ingiuntivo notificato",
+          "description": "Presenza del decreto o di un documento che ne riporti estremi e contenuto.",
+          "required": true,
+          "fact_terms": ["decreto ingiuntivo", "ingiunzione"],
+          "document_terms": ["decreto ingiuntivo", "ingiunzione", "notifica decreto"],
+          "suggestion": "Caricare il decreto ingiuntivo notificato o il relativo fascicolo telematico."
+        },
+        {
+          "id": "notification_date",
+          "label": "Data di notificazione",
+          "description": "Data da cui decorrono i termini per opposizione o attivita difensive.",
+          "required": true,
+          "fact_types": ["date"],
+          "labels": ["data notifica"],
+          "fact_terms": ["notifica", "notificato", "notificazione"],
+          "document_terms": ["notifica", "notificato", "relata"],
+          "suggestion": "Caricare relata, PEC o documento da cui risulta la data di notifica."
+        },
+        {
+          "id": "parties",
+          "label": "Parti del procedimento",
+          "description": "Identificazione di ricorrente/intimato o creditore/debitore.",
+          "required": true,
+          "fact_types": ["party"],
+          "labels": ["creditore", "debitore", "ricorrente", "resistente", "controparte"],
+          "document_terms": ["ricorrente", "intimato", "creditore", "debitore"],
+          "suggestion": "Caricare decreto, ricorso o memo che identifichi le parti."
+        },
+        {
+          "id": "opposition_grounds",
+          "label": "Motivi di opposizione",
+          "description": "Fatti o documenti che sorreggono le contestazioni.",
+          "required": true,
+          "fact_terms": ["pagato", "pagamento", "prescrizione", "non dovuto", "contestazione", "incompetenza", "nullita"],
+          "document_terms": ["pagamento", "prescrizione", "contestazione", "non dovuto", "eccezione", "incompetenza", "nullita"],
+          "suggestion": "Caricare prove di pagamento, contestazioni, contratti, eccezioni o documenti difensivi."
+        },
+        {
+          "id": "opposition_deadline",
+          "label": "Termine operativo di opposizione",
+          "description": "Promemoria interno sul termine o calcolo della scadenza.",
+          "required": false,
+          "fact_types": ["deadline"],
+          "labels": ["termine opposizione"],
+          "fact_terms": ["opposizione", "termine", "giorni"],
+          "document_terms": ["opposizione", "termine", "giorni"],
+          "suggestion": "Aggiungere una nota di calcolo scadenza dopo verifica della data di notifica."
+        }
+      ]
+    },
+    {
+      "id": "civil_debt_recovery_injunction",
+      "label": "Recupero crediti e decreto ingiuntivo",
+      "match_terms": ["decreto ingiuntivo", "ingiunzione", "recupero credito", "recupero crediti", "credito", "fattura", "monitorio"],
+      "requirements": [
+        {
+          "id": "creditor",
+          "label": "Creditore o ricorrente",
+          "description": "Individuazione del soggetto che afferma il credito.",
+          "required": true,
+          "fact_types": ["party"],
+          "labels": ["creditore", "ricorrente", "cliente", "attore"],
+          "document_terms": ["creditore", "ricorrente"],
+          "suggestion": "Caricare un documento o memo che identifichi creditore/ricorrente."
+        },
+        {
+          "id": "debtor",
+          "label": "Debitore o intimato",
+          "description": "Individuazione del soggetto contro cui si agisce.",
+          "required": true,
+          "fact_types": ["party"],
+          "labels": ["debitore", "controparte", "resistente", "convenuto"],
+          "document_terms": ["debitore", "intimato", "controparte"],
+          "suggestion": "Caricare un documento o memo che identifichi debitore/intimato."
+        },
+        {
+          "id": "amount",
+          "label": "Importo del credito",
+          "description": "Importo richiesto o capitale indicato nel fascicolo.",
+          "required": true,
+          "fact_types": ["amount"],
+          "labels": ["importo", "importo credito", "importo fattura", "capitale"],
+          "document_terms": ["euro", "importo", "credito", "capitale"],
+          "suggestion": "Caricare fatture, estratti conto o conteggio capitale/interessi."
+        },
+        {
+          "id": "written_evidence",
+          "label": "Prova scritta del credito",
+          "description": "Documento che sorregge il credito: fattura, contratto, ordine, DDT, estratto o riconoscimento.",
+          "required": true,
+          "fact_terms": ["fattura", "contratto", "ordine", "ddt", "estratto", "riconoscimento"],
+          "document_terms": ["fattura", "contratto", "ordine", "ddt", "estratto conto", "scrittura privata", "riconoscimento"],
+          "suggestion": "Caricare la prova scritta del credito e verificarne leggibilita e riferibilita al debitore."
+        },
+        {
+          "id": "due_or_payable",
+          "label": "Scadenza o esigibilita",
+          "description": "Dato che consente di capire quando il credito e diventato esigibile.",
+          "required": true,
+          "fact_types": ["date", "deadline"],
+          "labels": ["data scadenza", "termine pagamento"],
+          "fact_terms": ["scadenza", "pagare", "pagamento", "esigibile", "entro"],
+          "document_terms": ["scadenza", "pagamento", "pagare entro", "esigibile"],
+          "suggestion": "Caricare scadenza fattura, condizioni di pagamento o documento che provi l'esigibilita."
+        },
+        {
+          "id": "notice_or_default",
+          "label": "Sollecito, diffida o messa in mora",
+          "description": "Elemento utile per interessi, strategia e gestione precontenziosa.",
+          "required": false,
+          "fact_terms": ["mora", "diffida", "sollecito", "pec", "raccomandata"],
+          "document_terms": ["mora", "diffida", "sollecito", "pec", "raccomandata"],
+          "suggestion": "Caricare PEC, raccomandata, sollecito o diffida gia inviati."
+        }
+      ]
+    },
+    {
+      "id": "generic_case_file_review",
+      "label": "Analisi generale del fascicolo",
+      "match_terms": ["fascicolo", "analisi", "prova", "documento", "tesi", "strategia"],
+      "requirements": [
+        {
+          "id": "parties",
+          "label": "Parti coinvolte",
+          "description": "Soggetti principali del fascicolo.",
+          "required": true,
+          "fact_types": ["party"],
+          "labels": ["creditore", "debitore", "cliente", "controparte", "attore", "convenuto", "ricorrente", "resistente"],
+          "document_terms": ["cliente", "controparte", "attore", "convenuto", "ricorrente", "resistente"],
+          "suggestion": "Caricare un memo iniziale o atto che identifichi le parti."
+        },
+        {
+          "id": "dates",
+          "label": "Date rilevanti",
+          "description": "Cronologia minima dei fatti.",
+          "required": true,
+          "fact_types": ["date"],
+          "document_terms": ["data", "decorrenza", "scadenza", "notifica"],
+          "suggestion": "Caricare documenti datati o una cronologia del fascicolo."
+        },
+        {
+          "id": "documents",
+          "label": "Documenti principali",
+          "description": "Atti, contratti, comunicazioni o prove principali.",
+          "required": true,
+          "document_terms": ["contratto", "fattura", "atto", "pec", "lettera", "documento", "prova"],
+          "suggestion": "Caricare i documenti principali del fascicolo con titolo descrittivo."
+        },
+        {
+          "id": "economic_value",
+          "label": "Valore economico",
+          "description": "Importi, capitale, canoni, danni o altre poste economiche.",
+          "required": false,
+          "fact_types": ["amount"],
+          "document_terms": ["euro", "importo", "capitale", "danni", "canone"],
+          "suggestion": "Caricare conteggi, fatture o prospetti economici se rilevanti."
+        }
+      ]
+    }
+  ]
+}

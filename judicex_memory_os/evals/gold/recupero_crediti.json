@@ -1,0 +1,76 @@
+{
+  "name": "recupero_crediti_v1",
+  "description": "Gold quesiti seed sul recupero crediti (decreto ingiuntivo, prescrizione, prova scritta, opposizione). Da espandere a 50-100 quesiti per uso CI.",
+  "quesiti": [
+    {
+      "id": "rc-001",
+      "question": "Una SRL ha emesso fattura di 8.500 euro il 15 gennaio 2022 verso altra SRL italiana per servizi di consulenza prestati. Oggi 27 aprile 2026, fattura non contestata né pagata. Il credito è prescritto?",
+      "area": "civile",
+      "expected_domain": "recupero_crediti",
+      "expected_status": "grounded",
+      "must_cite_articles": ["2946", "2948"],
+      "must_not_cite_articles": ["2956"],
+      "expected_answer_excerpts": ["dieci anni", "cinque anni"]
+    },
+    {
+      "id": "rc-002",
+      "question": "Posso usare la fattura emessa dalla mia SRL come prova scritta per ottenere un decreto ingiuntivo verso un'altra SRL?",
+      "area": "civile",
+      "expected_domain": "recupero_crediti",
+      "expected_status": "grounded",
+      "must_cite_articles": ["634", "633"],
+      "must_not_cite_articles": [],
+      "expected_answer_excerpts": ["prova scritta", "imprenditori"]
+    },
+    {
+      "id": "rc-003",
+      "question": "Quali sono i presupposti per chiedere la provvisoria esecuzione di un decreto ingiuntivo?",
+      "area": "civile",
+      "expected_domain": "recupero_crediti",
+      "expected_status": "grounded",
+      "must_cite_articles": ["642"],
+      "must_not_cite_articles": [],
+      "expected_answer_excerpts": ["pericolo", "grave pregiudizio"]
+    },
+    {
+      "id": "rc-004",
+      "question": "Entro quanti giorni deve fare opposizione il debitore al decreto ingiuntivo notificato in Italia?",
+      "area": "civile",
+      "expected_domain": "recupero_crediti",
+      "expected_status": "grounded",
+      "must_cite_articles": ["641", "645"],
+      "must_not_cite_articles": [],
+      "expected_answer_excerpts": ["quaranta giorni"]
+    },
+    {
+      "id": "rc-005",
+      "question": "Cosa succede se il debitore non propone opposizione al decreto ingiuntivo nel termine?",
+      "area": "civile",
+      "expected_domain": "recupero_crediti",
+      "expected_status": "grounded",
+      "must_cite_articles": ["647"],
+      "must_not_cite_articles": [],
+      "expected_answer_excerpts": ["esecutivo", "esecutorietà"]
+    },
+    {
+      "id": "rc-006",
+      "question": "Entro quanti giorni dalla pronuncia va notificato il decreto ingiuntivo, pena la sua inefficacia?",
+      "area": "civile",
+      "expected_domain": "recupero_crediti",
+      "expected_status": "grounded",
+      "must_cite_articles": ["644"],
+      "must_not_cite_articles": [],
+      "expected_answer_excerpts": ["sessanta giorni"]
+    },
+    {
+      "id": "rc-007",
+      "question": "Quale tasso di interessi legale si applica nelle transazioni commerciali tra imprese e quale norma lo disciplina?",
+      "area": "civile",
+      "expected_domain": "recupero_crediti",
+      "expected_status": "grounded",
+      "must_cite_articles": ["1284"],
+      "must_not_cite_articles": [],
+      "expected_answer_excerpts": ["saggio", "interessi"]
+    }
+  ]
+}

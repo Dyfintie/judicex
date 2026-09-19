@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Judicex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+              serif: ["Georgia", "Cambria", "Times New Roman", "serif"],
+              mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"]
+            },
+            colors: {
+              ink: "#111111",
+              page: "#FFFFFF",
+              panel: "#FFFFFF",
+              sidebar: "#F8F8F8",
+              hover: "#F1F1F1",
+              line: "#E5E5E5",
+              muted: "#6B7280",
+              subtle: "#9CA3AF"
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      html,
+      body {
+        min-height: 100%;
+        background: #fff;
+      }
+
+      body {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #111;
+      }
+
+      .intro-title {
+        animation: introTitle .8s ease .15s both;
+      }
+
+      @keyframes introTitle {
+        from { transform: translateX(-12px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+
+      .sidebar {
+        width: 16rem;
+        background: #f8f8f8;
+        transition: width .22s ease, transform .22s ease;
+      }
+
+      .sidebar.is-collapsed {
+        width: 0;
+        overflow: hidden;
+        border-right-width: 0;
+      }
+
+      .main-shell {
+        padding-left: 16rem;
+        transition: padding-left .22s ease, padding-right .22s ease;
+      }
+
+      .main-shell.is-collapsed,
+      .main-shell.is-sidebar-hidden {
+        padding-left: 0;
+      }
+
+      /* Artifact split view (Claude/ChatGPT style).
+         When an artifact opens, the entire main shell gets a right padding
+         so the chat naturally re-centers in the remaining space. The
+         artifact panel itself is fixed at the right edge of the viewport.
+         Only on >= 1280px (xl breakpoint) — below that the chat would get
+         too narrow, so we fall back to the original floating overlay. */
+      @media (min-width: 1280px) {
+        body.has-artifact .main-shell {
+          padding-right: 520px;
+        }
+        body.has-artifact #artifactPanel {
+          top: 4.5rem;
+          bottom: 1rem;
+          right: 1rem;
+          left: auto;
+          width: 500px;
+          z-index: 30;
+        }
+      }
+
+      #mainSidebarToggle {
+        display: none;
+      }
+
+      .main-shell.is-collapsed #mainSidebarToggle {
+        display: inline-flex;
+      }
+
+      @media (max-width: 767px) {
+        .main-shell,
+        .main-shell.is-collapsed {
+          padding-left: 0;
+        }
+      }
+
+      .nav-row {
+        transition: background-color .15s ease, color .15s ease;
+      }
+
+      .nav-row:hover {
+        background: #f1f1f1;
+        color: #111;
+      }
+
+      .nav-row.is-active {
+        background: #fff;
+        color: #111;
+        box-shadow: 0 0 0 1px rgba(17,17,17,.08);
+      }
+
+      .app-hidden {
+        display: none !important;
+      }
+
+      .judicex-drafts-split {
+        align-items: start;
+      }
+
+      @media (min-width: 1024px) {
+        .judicex-drafts-preview {
+          height: calc(100vh - 9rem);
+        }
+      }
+
+      .judicex-paper {
+        background: #ffffff;
+        border: 1px solid #e5e5e5;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(17, 17, 17, .04), 0 8px 24px rgba(17, 17, 17, .06);
+        padding: 4rem 4.5rem;
+        min-height: 100%;
+        font-family: Georgia, Cambria, "Times New Roman", serif;
+        font-size: 0.95rem;
+        line-height: 1.85;
+        color: #111111;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        max-width: 820px;
+        margin: 0 auto;
+      }
+
+
+      @media (max-width: 768px) {
+        .judicex-paper {
+          padding: 2rem 1.75rem;
+        }
+      }
+
+      .matter-item.is-active {
+        background: #fff;
+        box-shadow: 0 0 0 1px rgba(17,17,17,.08);
+      }
+
+      .chat-shell {
+        min-height: calc(100vh - 56px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .messages-wrap {
+        display: none;
+      }
+
+      .initial-view {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+
+      .composer-wrap {
+        flex: 0 0 auto;
+        padding-bottom: 0;
+      }
+
+      body.has-messages .initial-view {
+        display: none;
+      }
+
+      body.has-messages .chat-shell {
+        min-height: calc(100vh - 56px);
+        justify-content: flex-start;
+      }
+
+      body.has-messages .messages-wrap {
+        display: block;
+        flex: 1 0 auto;
+        min-height: 0;
+        overflow-y: visible;
+        padding: 1.5rem 0 1rem;
+      }
+
+      body.has-messages .composer-wrap {
+        position: sticky;
+        bottom: 0;
+        padding: .5rem 0 .85rem;
+        border-top: 1px solid #e5e5e5;
+        background: #fff;
+      }
+
+      .composer {
+        border: 1px solid #d4d4d8;
+        border-radius: 20px;
+        background: #fff;
+        transition: border-color .15s ease, box-shadow .15s ease;
+      }
+
+      .composer:focus-within {
+        border-color: #111;
+        box-shadow: 0 0 0 3px rgba(17,17,17,.05);
+      }
+
+      body.has-messages .composer {
+        border-radius: 12px;
+      }
+
+      .pill {
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        font-size: 10.5px;
+        font-weight: 650;
+      }
+
+      .thinking-dot {
+        display: inline-block;
+        width: 5px;
+        height: 5px;
+        border-radius: 999px;
+        background: #15171a;
+        animation: thinkingBlink 1.2s infinite ease-in-out;
+      }
+
+      .thinking-dot:nth-child(2) { animation-delay: .15s; }
+      .thinking-dot:nth-child(3) { animation-delay: .3s; }
+
+      @keyframes thinkingBlink {
+        0%, 80%, 100% { opacity: .2; transform: translateY(0); }
+        40% { opacity: 1; transform: translateY(-1px); }
+      }
+
+      details > summary {
+        list-style: none;
+        cursor: pointer;
+      }
+
+      details > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      #matterList::-webkit-scrollbar,
+      #chatSessionList::-webkit-scrollbar,
+      .panel-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      #matterList::-webkit-scrollbar-thumb,
+      #chatSessionList::-webkit-scrollbar-thumb,
+      .panel-scroll::-webkit-scrollbar-thumb {
+        background: #d4d4d8;
+        border-radius: 999px;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-page text-ink antialiased">
+    <div id="app"
+         data-default-model="{{ default_model }}"
+         data-default-area="{{ default_area }}"
+         data-default-host="{{ ollama_host }}"
+         class="min-h-screen">
+
+      <input id="areaInput" type="hidden" value="{{ default_area }}">
+
+      <div id="healthBadge" class="hidden fixed top-3 right-4 z-40 rounded-md border border-line bg-white px-3 py-1.5 text-xs text-muted shadow-sm"></div>
+      <div id="sidebarBackdrop" class="fixed inset-0 z-20 hidden bg-black/30 backdrop-blur-sm md:hidden"></div>
+
+      <aside id="sidebar" class="sidebar fixed inset-y-0 left-0 z-30 flex -translate-x-full flex-col border-r border-line md:translate-x-0">
+        <div class="flex h-14 items-center justify-between px-3">
+          <a href="/" class="flex min-w-0 items-center rounded-md px-2 py-1 hover:bg-hover">
+            <span class="truncate font-serif text-2xl font-light text-ink">Judicex</span>
+          </a>
+          <button id="sidebarCloseDesktop" class="hidden h-8 w-8 items-center justify-center rounded-md text-muted hover:bg-hover hover:text-ink md:flex" type="button" title="Chiudi sidebar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+        </div>
+
+        <div class="px-2 pb-2">
+          <button id="newChatBtn" class="nav-row flex h-9 w-full items-center gap-3 rounded-md px-2.5 text-left text-sm text-gray-700" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <span>Nuova chat</span>
+          </button>
+          <button id="searchBtn" class="nav-row flex h-9 w-full items-center gap-3 rounded-md px-2.5 text-left text-sm text-gray-700" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <span>Cerca</span>
+          </button>
+          <button id="newMatterToggle" class="nav-row flex h-9 w-full items-center gap-3 rounded-md px-2.5 text-left text-sm text-gray-700" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Nuovo fascicolo</span>
+          </button>
+
+          <form id="newMatterForm" class="mt-2 hidden space-y-2 rounded-md border border-line bg-white p-2">
+            <input name="title" required class="h-8 w-full rounded-md border border-line px-2 text-sm outline-none focus:border-ink" placeholder="Titolo fascicolo">
+            <input name="client_name" class="h-8 w-full rounded-md border border-line px-2 text-sm outline-none focus:border-ink" placeholder="Cliente">
+            <input name="area" value="{{ default_area }}" class="h-8 w-full rounded-md border border-line px-2 text-sm outline-none focus:border-ink" placeholder="Area">
+            <textarea name="summary" rows="2" class="w-full resize-none rounded-md border border-line px-2 py-1.5 text-sm outline-none focus:border-ink" placeholder="Sintesi"></textarea>
+            <button class="h-8 w-full rounded-md bg-ink px-3 text-sm font-medium text-white hover:bg-black">Crea</button>
+          </form>
+        </div>
+
+        <div class="border-t border-line pb-2 pt-3">
+          <div class="flex items-center justify-between px-4 pb-1">
+            <div class="text-xs font-semibold text-gray-500">Chat aperte</div>
+          </div>
+          <div class="px-4 pb-2 text-[11px] text-gray-400">Tasto destro su una chat per eliminarla.</div>
+          <div id="chatSessionList" class="max-h-56 overflow-y-auto px-2"></div>
+        </div>
+
+        <div class="min-h-0 flex-1"></div>
+        <div id="matterList" class="hidden"></div>
+        <button id="refreshState" class="hidden" type="button">Aggiorna</button>
+
+        <nav id="primaryNav" class="border-t border-line p-2">
+          <a href="/settings" data-view="settings" class="view-link nav-row flex h-9 w-full items-center gap-3 rounded-md px-2.5 text-sm text-gray-700">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15.5A3.5 3.5 0 1012 8a3.5 3.5 0 000 7.5z"/><path d="M19.4 15a1.7 1.7 0 00.34 1.88l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.88-.34 1.7 1.7 0 00-1.03 1.56V21a2 2 0 01-4 0v-.09a1.7 1.7 0 00-1.03-1.56 1.7 1.7 0 00-1.88.34l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.7 1.7 0 004.6 15a1.7 1.7 0 00-1.56-1.03H3a2 2 0 010-4h.09A1.7 1.7 0 004.65 8.4a1.7 1.7 0 00-.34-1.88l-.06-.06a2 2 0 012.83-2.83l.06.06A1.7 1.7 0 009.03 4.03 1.7 1.7 0 0010.59 3H11a2 2 0 014 0v.09a1.7 1.7 0 001.03 1.56 1.7 1.7 0 001.88-.34l.06-.06a2 2 0 012.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.88 1.7 1.7 0 001.56 1.03H21a2 2 0 010 4h-.09A1.7 1.7 0 0019.4 15z"/></svg>
+            <span>Impostazioni</span>
+          </a>
+          <button id="sidebarClose" class="nav-row mt-1 flex h-9 w-full items-center gap-3 rounded-md px-2.5 text-left text-sm text-gray-700 md:hidden" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            <span>Chiudi</span>
+          </button>
+        </nav>
+      </aside>
+
+      <main id="mainShell" class="main-shell min-h-screen">
+        <header class="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-line bg-white/95 px-4 backdrop-blur sm:px-6">
+          <div class="flex min-w-0 items-center gap-3">
+            <button id="sidebarToggle" class="flex h-8 w-8 items-center justify-center rounded-md hover:bg-hover md:hidden" type="button" aria-label="Apri sidebar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </button>
+            <button id="mainSidebarToggle" class="h-8 w-8 items-center justify-center rounded-md hover:bg-hover" type="button" title="Apri sidebar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </button>
+            <div id="activeMatterMeta" class="truncate text-sm text-gray-600"></div>
+          </div>
+        </header>
+
+        <section class="chat-shell mx-auto w-full max-w-4xl px-6">
+          <div class="initial-view">
+            <div id="heroBlock" class="mb-10 flex items-center justify-center gap-4">
+              <h1 class="intro-title whitespace-nowrap font-serif text-4xl font-light text-gray-900">Judicex</h1>
+            </div>
+          </div>
+
+          <div class="messages-wrap w-full">
+            <section id="messageList" class="w-full space-y-6"></section>
+          </div>
+
+          <div class="composer-wrap w-full">
+            <form id="chatForm" class="composer">
+              <div id="dropZone">
+                <div id="attachmentTray" class="hidden flex-wrap gap-1.5 px-2 pt-2"></div>
+                <div class="px-4 pt-4">
+                  <textarea id="questionInput" rows="1"
+                            class="max-h-48 w-full resize-none overflow-hidden border-0 bg-transparent p-0 text-base leading-6 text-ink outline-none placeholder:text-gray-400"
+                            placeholder="Fai una domanda sulle fonti o sui documenti del fascicolo..."></textarea>
+                </div>
+                <div id="uploadStatus" class="min-h-[18px] px-4 pt-1 text-xs text-gray-500"></div>
+                <div class="flex items-center justify-between gap-2 p-2.5">
+                  <div class="flex min-w-0 items-center gap-1">
+                    <input id="fileInput" type="file" multiple class="hidden"
+                           accept=".pdf,.docx,.txt,.md,.markdown,.csv,.json,.png,.jpg,.jpeg,.webp,.tif,.tiff,.bmp,.gif,.heic,image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                    <button id="chooseFiles" type="button" class="flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm text-gray-400 transition hover:bg-gray-100 hover:text-gray-700">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.5l-9 9a5.5 5.5 0 11-7.78-7.78l9-9a3.5 3.5 0 014.95 4.95l-9 9a1.5 1.5 0 01-2.12-2.12l8.49-8.49"/></svg>
+                      <span class="hidden sm:inline">Documenti</span>
+                    </button>
+                    <button id="composerPanelButton" type="button" class="flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm text-gray-400 transition hover:bg-gray-100 hover:text-gray-700">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 3v18"/></svg>
+                      <span class="hidden sm:inline">Fascicolo</span>
+                    </button>
+                    <button id="analyzeButton" type="button" class="flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm text-gray-400 transition hover:bg-gray-100 hover:text-gray-700">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+                      <span class="hidden sm:inline">Workflow</span>
+                    </button>
+                  </div>
+
+                  <div class="flex items-center gap-1">
+                    <button id="sendButton" class="relative flex h-8 w-8 items-center justify-center rounded-[10px] border border-white/30 bg-gradient-to-b from-neutral-700 to-black text-white transition active:scale-95 disabled:cursor-default disabled:from-neutral-500 disabled:to-neutral-700 disabled:opacity-40">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+            <p class="py-3 text-center text-xs text-gray-500">Judicex puo commettere errori. Le risposte non sostituiscono la valutazione professionale.</p>
+          </div>
+        </section>
+
+        <section id="pageShell" class="app-hidden mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
+          <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0">
+              <button id="pageBackButton" class="mb-3 hidden h-9 items-center gap-2 rounded-md border border-line px-3 text-sm text-gray-700 hover:bg-gray-50" type="button">
+                <span aria-hidden="true">&larr;</span>
+                <span>Torna a Impostazioni</span>
+              </button>
+              <div id="pageEyebrow" class="pill mb-2 text-gray-500">Judicex</div>
+              <h1 id="pageTitle" class="font-serif text-3xl font-light text-ink">Dashboard</h1>
+              <p id="pageSubtitle" class="mt-1 max-w-3xl text-sm leading-6 text-gray-600"></p>
+            </div>
+          </div>
+          <div id="pageContent" class="space-y-4"></div>
+        </section>
+      </main>
+
+      <section id="workspacePanel" class="fixed bottom-4 right-4 top-20 z-20 hidden w-[min(860px,calc(100vw-2rem))] overflow-hidden rounded-xl border border-line bg-white shadow-xl">
+        <div class="flex h-full flex-col">
+          <div class="flex h-14 items-center justify-between border-b border-line px-4">
+            <div class="min-w-0">
+              <div id="activeMatterTitle" class="truncate text-sm font-semibold text-ink">Nessun fascicolo</div>
+              <div class="mt-0.5 text-xs text-gray-500">Memoria privata SQLite</div>
+            </div>
+            <button id="detailClose" class="ml-3 inline-flex h-8 items-center rounded-md px-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-ink" type="button">Chiudi</button>
+          </div>
+          <div class="panel-scroll min-h-0 flex-1 overflow-y-auto p-4">
+            <details open class="mb-3 rounded-md border border-line bg-white">
+              <summary class="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-ink">
+                <span>Cartelle</span>
+                <span id="folderCount" class="font-normal lowercase tracking-normal text-gray-400"></span>
+              </summary>
+              <div class="border-t border-line p-3">
+                <div class="flex gap-2">
+                  <input id="folderNameInput" class="h-8 min-w-0 flex-1 rounded-md border border-line px-2 text-sm outline-none focus:border-ink" placeholder="Nome cartella">
+                  <button id="createFolderButton" class="h-8 rounded-md bg-ink px-3 text-xs font-medium text-white" type="button">Crea</button>
+                </div>
+                <div id="folderPanel" class="mt-3 space-y-1 text-sm"></div>
+              </div>
+            </details>
+
+            <details open class="mb-3 rounded-md border border-line bg-white">
+              <summary class="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-ink">
+                <span>Documenti</span>
+                <span id="documentCount" class="font-normal lowercase tracking-normal text-gray-400"></span>
+              </summary>
+              <div class="border-t border-line p-3">
+                <div id="documentsPanel" class="space-y-2 text-sm"></div>
+              </div>
+            </details>
+
+            <details id="documentViewerBox" class="mb-3 hidden rounded-md border border-line bg-white">
+              <summary class="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-ink">
+                <span>Viewer documento</span>
+              </summary>
+              <div class="border-t border-line p-3">
+                <div id="documentPreviewTitle" class="truncate text-sm font-semibold text-ink"></div>
+                <div id="documentPreviewMeta" class="mt-1 text-xs text-gray-500"></div>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <a id="documentDownloadLink" class="rounded-md border border-line px-2 py-1 text-xs text-gray-600 hover:bg-gray-50" href="#" target="_blank">Download</a>
+                  <a id="documentDocxLink" class="rounded-md border border-line px-2 py-1 text-xs text-gray-600 hover:bg-gray-50" href="#" target="_blank">DOCX</a>
+                  <button id="ocrDocumentButton" class="rounded-md border border-line px-2 py-1 text-xs text-gray-600 hover:bg-gray-50" type="button">OCR AI</button>
+                  <button id="compareCurrentButton" class="rounded-md border border-line px-2 py-1 text-xs text-gray-600 hover:bg-gray-50" type="button">Confronta</button>
+                </div>
+                <div id="pdfViewerShell" class="mt-3 hidden rounded-md border border-line bg-gray-50">
+                  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-line px-2 py-2">
+                    <div class="flex items-center gap-1">
+                      <button id="pdfZoomOut" class="rounded-md border border-line bg-white px-2 py-1 text-xs" type="button">-</button>
+                      <span id="pdfZoomLabel" class="min-w-12 text-center text-xs text-gray-500">100%</span>
+                      <button id="pdfZoomIn" class="rounded-md border border-line bg-white px-2 py-1 text-xs" type="button">+</button>
+                    </div>
+                    <label class="flex items-center gap-1 text-xs text-gray-500">
+                      Pagina
+                      <input id="pdfPageInput" type="number" min="1" value="1" class="h-7 w-16 rounded-md border border-line bg-white px-2 text-xs">
+                      <span id="pdfPageCount"></span>
+                    </label>
+                  </div>
+                  <div class="h-[520px] overflow-auto p-2">
+                    <iframe id="pdfNativeFrame" class="h-full w-full origin-top-left rounded-md bg-white" title="PDF preview"></iframe>
+                  </div>
+                </div>
+                <pre id="documentPreviewContent" class="mt-3 max-h-56 overflow-auto whitespace-pre-wrap rounded-md bg-gray-50 p-3 text-xs leading-5 text-gray-700"></pre>
+                <div class="mt-3 grid gap-3 md:grid-cols-2">
+                  <div>
+                    <div class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">Annotazioni</div>
+                    <div class="flex gap-2">
+                      <input id="documentAnnotationNote" class="h-8 min-w-0 flex-1 rounded-md border border-line px-2 text-xs outline-none focus:border-ink" placeholder="Nota pagina corrente">
+                      <button id="addAnnotationButton" class="h-8 rounded-md bg-ink px-2 text-xs font-medium text-white" type="button">Aggiungi</button>
+                    </div>
+                    <div id="annotationPanel" class="mt-2 max-h-36 space-y-1 overflow-auto text-xs"></div>
+                  </div>
+                  <div>
+                    <div class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">Commenti</div>
+                    <div class="flex gap-2">
+                      <input id="documentCommentInput" class="h-8 min-w-0 flex-1 rounded-md border border-line px-2 text-xs outline-none focus:border-ink" placeholder="Commento">
+                      <button id="addCommentButton" class="h-8 rounded-md bg-ink px-2 text-xs font-medium text-white" type="button">Invia</button>
+                    </div>
+                    <div id="commentPanel" class="mt-2 max-h-36 space-y-1 overflow-auto text-xs"></div>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <div class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">Versioni</div>
+                  <div id="documentVersionPanel" class="space-y-1 text-xs"></div>
+                  <pre id="documentComparePanel" class="mt-2 max-h-44 overflow-auto whitespace-pre-wrap rounded-md bg-gray-950 p-2 text-[11px] leading-4 text-white"></pre>
+                </div>
+                <div class="mt-3">
+                  <div class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">Modifica con tracciamento</div>
+                  <textarea id="documentEditContent" rows="6" class="w-full resize-y rounded-md border border-line p-2 text-xs leading-5 outline-none focus:border-ink"></textarea>
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    <button id="saveDocumentEditButton" class="rounded-md bg-ink px-3 py-1.5 text-xs font-medium text-white" type="button">Salva revisione</button>
+                    <button id="applyDocumentEditButton" class="rounded-md border border-line px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50" type="button">Applica ultima</button>
+                  </div>
+                  <pre id="documentEditDiff" class="mt-2 max-h-44 overflow-auto whitespace-pre-wrap rounded-md bg-gray-950 p-2 text-[11px] leading-4 text-white"></pre>
+                </div>
+              </div>
+            </details>
+
+            <details class="mb-3 rounded-md border border-line bg-white">
+              <summary class="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-ink">
+                <span>Workflow</span>
+              </summary>
+              <div class="border-t border-line p-3">
+                <select id="workflowPackSelect" class="mb-2 h-8 w-full rounded-md border border-line px-2 text-sm outline-none focus:border-ink"></select>
+                <textarea id="workflowThesisInput" rows="3" class="w-full resize-y rounded-md border border-line p-2 text-sm outline-none focus:border-ink" placeholder="Obiettivo dell'analisi o tesi da verificare"></textarea>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <button id="runWorkflowButton" class="h-8 rounded-md bg-ink px-3 text-xs font-medium text-white" type="button">Esegui workflow</button>
+                  <button id="editWorkflowButton" class="h-8 rounded-md border border-line px-3 text-xs text-gray-700 hover:bg-gray-50" type="button">Carica</button>
+                  <button id="duplicateWorkflowButton" class="h-8 rounded-md border border-line px-3 text-xs text-gray-700 hover:bg-gray-50" type="button">Duplica</button>
+                  <button id="deleteWorkflowButton" class="h-8 rounded-md border border-line px-3 text-xs text-gray-700 hover:bg-gray-50" type="button">Elimina</button>
+                </div>
+                <div id="workflowPanel" class="mt-3 space-y-2 text-sm"></div>
+                <div class="mt-4 border-t border-line pt-3">
+                  <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Builder workflow</div>
+                  <input id="workflowLabelInput" class="h-8 w-full rounded-md border border-line px-2 text-sm outline-none focus:border-ink" placeholder="Nome workflow">
+                  <textarea id="workflowRequirementsInput" rows="5" class="mt-2 w-full resize-y rounded-md border border-line p-2 text-xs leading-5 outline-none focus:border-ink" placeholder="Un requisito per riga: Etichetta | parole fatto | parole documento | obbligatorio/opzionale | suggerimento"></textarea>
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    <button id="createWorkflowButton" class="h-8 rounded-md border border-line px-3 text-xs font-medium text-gray-700 hover:bg-gray-50" type="button">Crea e usa</button>
+                    <button id="updateWorkflowButton" class="h-8 rounded-md border border-line px-3 text-xs font-medium text-gray-700 hover:bg-gray-50" type="button">Aggiorna selezionato</button>
+                  </div>
+                  <div id="workflowCreateStatus" class="mt-2 text-xs text-gray-500"></div>
+                  <div id="workflowVersionPanel" class="mt-2 max-h-32 space-y-1 overflow-auto text-xs"></div>
+                </div>
+              </div>
+            </details>
+
+            <details open class="mb-3 rounded-md border border-line bg-white">
+              <summary class="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-ink">
+                <span>Visualizzazioni</span>
+              </summary>
+              <div id="visualizationPanel" class="border-t border-line p-3 text-xs"></div>
+            </details>
+
+            <details class="mb-3 rounded-md border border-line bg-white">
+              <summary class="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-ink">
+                <span>Tabular review</span>
+              </summary>
+              <div class="border-t border-line p-3">
+                <input id="tabularQueryInput" class="h-8 w-full rounded-md border border-line px-2 text-sm outline-none focus:border-ink" placeholder="Filtro tabella">
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <button id="createReviewButton" class="h-8 rounded-md bg-ink px-3 text-xs font-medium text-white" type="button">Crea tabella</button>
+                  <button id="saveReviewViewButton" class="h-8 rounded-md border border-line px-3 text-xs text-gray-700 hover:bg-gray-50" type="button">Salva vista</button>
+                  <a id="reviewCsvLink" class="hidden h-8 rounded-md border border-line px-3 py-2 text-xs text-gray-700 hover:bg-gray-50" href="#">CSV</a>
+                  <a id="reviewXlsxLink" class="hidden h-8 rounded-md border border-line px-3 py-2 text-xs text-gray-700 hover:bg-gray-50" href="#">XLSX</a>
+                  <a id="reviewDocxLink" class="hidden h-8 rounded-md border border-line px-3 py-2 text-xs text-gray-700 hover:bg-gray-50" href="#">DOCX</a>
+                </div>
+                <div class="mt-2 grid gap-2 md:grid-cols-3">
+                  <input id="reviewFilterInput" class="h-8 rounded-md border border-line px-2 text-xs outline-none focus:border-ink" placeholder="Filtra vista">
+                  <select id="reviewSortSelect" class="h-8 rounded-md border border-line px-2 text-xs outline-none focus:border-ink"></select>
+                  <input id="reviewViewNameInput" class="h-8 rounded-md border border-line px-2 text-xs outline-none focus:border-ink" placeholder="Nome vista">
+                </div>
+                <div id="reviewPanel" class="mt-3 overflow-auto text-xs"></div>
+              </div>
+            </details>
+
+            <details class="mb-3 rounded-md border border-line bg-white">
+              <summary class="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-ink">
+                <span>Genera atto</span>
+              </summary>
+              <div class="border-t border-line p-3">
+                <select id="draftTemplateSelect" class="h-8 w-full rounded-md border border-line px-2 text-sm outline-none focus:border-ink"></select>
+                <input id="draftAsOfDate" class="mt-2 h-8 w-full rounded-md border border-line px-2 text-sm outline-none focus:border-ink" placeholder="Data vigenza YYYY-MM-DD">
+                <textarea id="draftParamsInput" rows="4" class="mt-2 w-full resize-y rounded-md border border-line p-2 text-xs leading-5 outline-none focus:border-ink" placeholder="attore: Mario Rossi&#10;convenuto: Beta S.r.l."></textarea>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <button id="createDraftButton" class="h-8 rounded-md bg-ink px-3 text-xs font-medium text-white" type="button">Genera e salva</button>
+                  <button id="previewDraftButton" class="h-8 rounded-md border border-line px-3 text-xs text-gray-700 hover:bg-gray-50" type="button">Anteprima</button>
+                </div>
+                <div id="draftStatus" class="mt-2 text-xs text-gray-500"></div>
+                <pre id="draftPreviewPanel" class="mt-2 max-h-48 overflow-auto whitespace-pre-wrap rounded-md bg-gray-50 p-2 text-xs leading-5 text-gray-700"></pre>
+                <div class="mt-4 border-t border-line pt-3">
+                  <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Editor template</div>
+                  <input id="draftTemplateTitleInput" class="h-8 w-full rounded-md border border-line px-2 text-sm outline-none focus:border-ink" placeholder="Titolo template">
+                  <input id="draftTemplateParamsInput" class="mt-2 h-8 w-full rounded-md border border-line px-2 text-xs outline-none focus:border-ink" placeholder="Campi richiesti: attore, convenuto">
+                  <textarea id="draftTemplateBodyInput" rows="7" class="mt-2 w-full resize-y rounded-md border border-line p-2 text-xs leading-5 outline-none focus:border-ink" placeholder="Testo dell'atto con {attore}, {convenuto}, ..."></textarea>
+                  <button id="saveDraftTemplateButton" class="mt-2 h-8 rounded-md border border-line px-3 text-xs text-gray-700 hover:bg-gray-50" type="button">Salva template</button>
+                </div>
+              </div>
+            </details>
+
+            <details class="mb-3 rounded-md border border-line bg-white">
+              <summary class="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-ink">
+                <span>Tool</span>
+              </summary>
+              <div class="border-t border-line p-3">
+                <select id="toolSelect" class="h-8 w-full rounded-md border border-line px-2 text-sm outline-none focus:border-ink"></select>
+                <textarea id="toolArgsInput" rows="4" class="mt-2 w-full resize-y rounded-md border border-line p-2 text-xs leading-5 outline-none focus:border-ink" placeholder="query: cerca nei documenti"></textarea>
+                <button id="runToolButton" class="mt-2 h-8 rounded-md bg-ink px-3 text-xs font-medium text-white" type="button">Esegui tool</button>
+                <pre id="toolOutput" class="mt-2 max-h-52 overflow-auto rounded-md bg-gray-950 p-2 text-[11px] leading-4 text-white"></pre>
+              </div>
+            </details>
+
+            <div class="mb-5">
+              <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Fatti</div>
+              <div id="factsPanel" class="space-y-2 text-sm"></div>
+            </div>
+            <div class="mb-5">
+              <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Fonti citate</div>
+              <div id="sourcesPanel" class="space-y-2 text-sm"></div>
+            </div>
+            <details class="rounded-md border border-line bg-gray-50">
+              <summary class="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-ink">
+                <span>Audit</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+              </summary>
+              <pre id="auditPanel" class="m-2 max-h-72 overflow-auto rounded-md bg-ink p-3 font-mono text-xs leading-relaxed text-white">{}</pre>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section id="artifactPanel" class="fixed bottom-4 right-4 top-20 z-40 hidden w-[min(720px,calc(100vw-2rem))] overflow-hidden rounded-xl border border-line bg-white shadow-xl">
+        <div class="flex h-full flex-col">
+          <div class="flex min-h-14 items-center justify-between gap-3 border-b border-line px-4">
+            <div class="min-w-0">
+              <div id="artifactTitle" class="truncate text-sm font-semibold text-ink">Documento Judicex</div>
+              <div id="artifactMeta" class="mt-0.5 text-xs text-gray-500">Documento generato</div>
+            </div>
+            <button id="artifactClose" class="inline-flex h-8 shrink-0 items-center rounded-md px-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-ink" type="button">Chiudi</button>
+          </div>
+          <div class="flex flex-wrap gap-2 border-b border-line bg-gray-50 px-4 py-3">
+            <a id="artifactDownloadNative" class="h-8 rounded-md bg-ink px-3 py-2 text-xs font-medium text-white hover:bg-black" href="#">Scarica</a>
+            <a id="artifactDownloadDocx" class="h-8 rounded-md border border-line bg-white px-3 py-2 text-xs text-gray-700 hover:bg-gray-50" href="#">Word</a>
+            <a id="artifactDownloadPdf" class="h-8 rounded-md border border-line bg-white px-3 py-2 text-xs text-gray-700 hover:bg-gray-50" href="#">PDF</a>
+          </div>
+          <div class="min-h-0 flex-1 overflow-y-auto p-4">
+            <pre id="artifactPreviewContent" class="whitespace-pre-wrap rounded-md border border-line bg-white p-4 font-serif text-sm leading-7 text-ink"></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="chatDeleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/30 px-4" aria-modal="true" role="dialog" aria-labelledby="chatDeleteTitle">
+        <div class="w-full max-w-sm rounded-md border border-line bg-white p-4 shadow-xl">
+          <div id="chatDeleteTitle" class="text-sm font-semibold text-ink">Eliminare questa chat?</div>
+          <p id="chatDeleteModalText" class="mt-2 text-sm leading-5 text-gray-600">La chat verra eliminata definitivamente.</p>
+          <div class="mt-4 flex justify-end gap-2">
+            <button id="chatDeleteCancel" class="h-9 rounded-md border border-line px-3 text-sm text-gray-700 hover:bg-gray-50" type="button">Annulla</button>
+            <button id="chatDeleteConfirm" class="h-9 rounded-md bg-ink px-3 text-sm font-medium text-white hover:bg-black" type="button">Elimina</button>
+          </div>
+        </div>
+      </section>
+
+      <textarea id="thesisInput" rows="2" class="hidden" placeholder="Obiettivo dell'analisi"></textarea>
+    </div>
+
+    <script>
+      (function () {
+        var sidebar = document.getElementById("sidebar");
+        var mainShell = document.getElementById("mainShell");
+        var closeBtn = document.getElementById("sidebarCloseDesktop");
+        var openBtn = document.getElementById("mainSidebarToggle");
+        if (!sidebar || !mainShell) return;
+        var KEY = "judicex.sidebar.mikehome";
+        function apply(collapsed) {
+          sidebar.classList.toggle("is-collapsed", collapsed);
+          mainShell.classList.toggle("is-collapsed", collapsed);
+        }
+        try { apply(localStorage.getItem(KEY) === "1"); } catch (e) { apply(false); }
+        if (closeBtn) closeBtn.addEventListener("click", function () {
+          apply(true);
+          try { localStorage.setItem(KEY, "1"); } catch (e) {}
+        });
+        if (openBtn) openBtn.addEventListener("click", function () {
+          apply(false);
+          try { localStorage.setItem(KEY, "0"); } catch (e) {}
+        });
+      })();
+
+      (function () {
+        var ta = document.getElementById("questionInput");
+        var form = document.getElementById("chatForm");
+        if (!ta || !form) return;
+        function resize() {
+          ta.style.height = "auto";
+          ta.style.height = Math.min(ta.scrollHeight, 190) + "px";
+        }
+        ta.addEventListener("input", resize);
+        ta.addEventListener("keydown", function (event) {
+          if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+            event.preventDefault();
+            if (typeof form.requestSubmit === "function") form.requestSubmit();
+            else form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+          }
+        });
+        form.addEventListener("submit", function () {
+          document.body.classList.add("has-messages");
+          setTimeout(function () {
+            if (!ta.value) ta.style.height = "";
+          }, 0);
+        }, { capture: true });
+      })();
+
+      (function () {
+        var messageList = document.getElementById("messageList");
+        if (!messageList) return;
+        function refresh() {
+          document.body.classList.toggle("has-messages", messageList.children.length > 0);
+        }
+        new MutationObserver(refresh).observe(messageList, { childList: true });
+        refresh();
+      })();
+
+      (function () {
+        var sidebar = document.getElementById("sidebar");
+        var mainShell = document.getElementById("mainShell");
+        if (!sidebar || !mainShell) return;
+        function syncFromTransform() {
+          var hidden = (sidebar.style.transform || "").indexOf("-100%") !== -1;
+          mainShell.classList.toggle("is-sidebar-hidden", hidden);
+        }
+        new MutationObserver(syncFromTransform).observe(sidebar, { attributes: true, attributeFilter: ["style"] });
+        syncFromTransform();
+      })();
+    </script>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>

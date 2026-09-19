@@ -1,0 +1,24 @@
+{
+  "name": "ricorso_decreto_ingiuntivo",
+  "title": "Ricorso per decreto ingiuntivo",
+  "required_articles": ["633", "634", "641", "642"],
+  "required_params": ["creditore", "debitore", "importo", "causale", "tribunale"],
+  "sections": [
+    {
+      "heading": "On.le Tribunale di {tribunale}",
+      "body": "Il sottoscritto, in nome e per conto di {creditore}, espone quanto segue."
+    },
+    {
+      "heading": "In fatto",
+      "body": "Tra il ricorrente {creditore} e il resistente {debitore} è sorto un credito di euro {importo} a titolo di {causale}. Il credito risulta documentato e non contestato; il debitore non ha provveduto al pagamento entro i termini."
+    },
+    {
+      "heading": "In diritto",
+      "body": "Il ricorrente è titolare di credito certo, liquido ed esigibile, con prova scritta idonea ai sensi dell'{ARTICLES.634}. Sussistono i presupposti di ammissibilità del procedimento monitorio previsti dall'{ARTICLES.633}; il giudice, accolta la domanda, ingiunge il pagamento ai sensi dell'{ARTICLES.641}, con possibile concessione di provvisoria esecuzione ai sensi dell'{ARTICLES.642} ove ricorrano i presupposti di pericolo nel ritardo o di documentazione sottoscritta dal debitore."
+    },
+    {
+      "heading": "PQM",
+      "body": "Si chiede ingiunzione di pagamento di euro {importo} oltre interessi e spese, contro {debitore}, con provvisoria esecutorietà se ricorrono i presupposti, e fissazione del termine per opporsi. Si richiamano: {ARTICLE_BLOCK}."
+    }
+  ]
+}
