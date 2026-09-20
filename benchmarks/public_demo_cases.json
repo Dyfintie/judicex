@@ -1,0 +1,26 @@
+{
+  "name": "judicex_public_demo",
+  "cases": [
+    {
+      "id": "recupero_crediti_b2b",
+      "question": "Un cliente deve recuperare 8.500 euro per tre fatture non pagate. Prima fammi domande sui dati mancanti, poi checklist documentale, rischi processuali, strategia operativa e bozza di diffida.",
+      "expected_terms": [
+        "Dati da chiarire",
+        "Checklist documentale",
+        "Rischi processuali",
+        "Strategia operativa",
+        "Bozza diffida"
+      ]
+    },
+    {
+      "id": "differenza_diffida_mora_di",
+      "question": "Spiegami la differenza pratica tra diffida, messa in mora e ricorso per decreto ingiuntivo in un recupero credito B2B.",
+      "expected_terms": [
+        "Differenza pratica",
+        "diffida",
+        "messa in mora",
+        "decreto ingiuntivo"
+      ]
+    }
+  ]
+}
