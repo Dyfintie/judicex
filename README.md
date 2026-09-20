@@ -255,25 +255,6 @@ judicex memory-add    --db ./memory.db --kind preference \
 judicex memory-search --db ./memory.db --query "recupero crediti"
 ```
 
-## Comparison
-
-| Dimension              | Judicex (OSS)                  | Harvey (closed)        | Legora (closed)       |
-| ---------------------- | ------------------------------ | ---------------------- | --------------------- |
-| Source code            | Apache-2.0, public             | Closed                 | Closed                |
-| Hosting model          | Self-hostable (laptop or server) | Vendor SaaS          | Vendor SaaS           |
-| Data residency         | Wherever you install it        | Vendor cloud           | Vendor cloud          |
-| LLM provider           | Ollama / OpenAI / Anthropic / compat. / none | Vendor pipeline | Vendor pipeline |
-| Answer contract        | Deterministic, fail-closed     | Opaque                 | Opaque                |
-| Versioned legal corpus | Yes (SQLite + atoms)           | Yes (proprietary)      | Yes (proprietary)     |
-| Workflow packs         | JSON, user-editable            | Vendor-defined         | Vendor-defined        |
-| MCP / extensibility    | MCP stdio + CLI + Python API   | Limited                | Limited               |
-| Cost                   | Free (run your own infra)      | Enterprise pricing     | Enterprise pricing    |
-| Maturity               | `v0.2.0-alpha`                 | Production             | Production            |
-
-Judicex is **not** a drop-in replacement for Harvey or Legora today. It is
-the open foundation underneath the same idea, designed for firms that want
-control, auditability and verticalisation more than a polished SaaS.
-
 ## Self-host or cloud — your call
 
 The open-source build is designed to run wherever you install it:
