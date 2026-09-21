@@ -10,8 +10,16 @@ from urllib.request import Request, urlopen
 SETTINGS_KEY = "llm"
 
 PROVIDERS: dict[str, dict[str, str]] = {
+    "groq": {
+        "label": "Groq",
+        "default_model": "qwen/qwen3.8-27b",
+        "default_base_url": "https://api.groq.com/openai/v1",
+        "api_key_env": "GROQ_API_KEY",
+        "kind": "openai",
+        "model_options": "qwen/qwen3.8-27b,openai/gpt-oss-120b,openai/gpt-oss-20b,allam-2-7b",
+    },
     "ollama": {
-        "label": "Ollama locale",
+        "label": "Local Ollama",
         "default_model": "qwen2.5:7b",
         "default_base_url": "http://127.0.0.1:11434",
         "api_key_env": "",
@@ -35,7 +43,7 @@ PROVIDERS: dict[str, dict[str, str]] = {
         "model_options": "claude-3-5-sonnet-latest,claude-3-5-haiku-latest,claude-3-opus-latest",
     },
     "openai_compatible": {
-        "label": "OpenAI compatibile",
+        "label": "OpenAI Compatible",
         "default_model": "local-model",
         "default_base_url": "http://127.0.0.1:8000/v1",
         "api_key_env": "OPENAI_COMPATIBLE_API_KEY",
@@ -43,7 +51,7 @@ PROVIDERS: dict[str, dict[str, str]] = {
         "model_options": "local-model,qwen2.5:7b,llama3.1:8b",
     },
     "none": {
-        "label": "Nessun LLM",
+        "label": "No LLM",
         "default_model": "",
         "default_base_url": "",
         "api_key_env": "",
@@ -72,12 +80,13 @@ def load_dotenv(path: str | Path = ".env") -> None:
 
 def default_settings(*, default_model: str = "", ollama_host: str = "") -> dict[str, Any]:
     load_dotenv()
-    provider = os.getenv("JUDICEX_LLM_PROVIDER", "ollama").strip() or "ollama"
+    provider = os.getenv("JUDICEX_LLM_PROVIDER", "groq").strip() or "groq"
     if provider not in PROVIDERS:
-        provider = "ollama"
+        provider = "groq"
     return {
         "provider": provider,
         "models": {
+            "groq": os.getenv("GROQ_MODEL") or PROVIDERS["groq"]["default_model"],
             "ollama": os.getenv("OLLAMA_MODEL") or default_model or PROVIDERS["ollama"]["default_model"],
             "openai": os.getenv("OPENAI_MODEL") or PROVIDERS["openai"]["default_model"],
             "anthropic": os.getenv("ANTHROPIC_MODEL") or PROVIDERS["anthropic"]["default_model"],
@@ -85,6 +94,7 @@ def default_settings(*, default_model: str = "", ollama_host: str = "") -> dict[
             "none": "",
         },
         "base_urls": {
+            "groq": os.getenv("GROQ_BASE_URL") or PROVIDERS["groq"]["default_base_url"],
             "ollama": os.getenv("OLLAMA_HOST") or ollama_host or PROVIDERS["ollama"]["default_base_url"],
             "openai": os.getenv("OPENAI_BASE_URL") or PROVIDERS["openai"]["default_base_url"],
             "anthropic": os.getenv("ANTHROPIC_BASE_URL") or PROVIDERS["anthropic"]["default_base_url"],
@@ -239,12 +249,12 @@ def make_client(settings: dict[str, Any]) -> Any:
         from .ollama_agent import OllamaClient
 
         return OllamaClient(host=settings["base_url"])
-    if provider in {"openai", "openai_compatible"}:
+    if provider in {"openai", "openai_compatible", "groq"}:
         return OpenAICompatibleClient(
             base_url=settings["base_url"],
             api_key=_api_key(settings),
             provider_label=settings["provider_label"],
-            api_key_required=provider == "openai",
+            api_key_required=provider in {"openai", "groq"},
         )
     if provider == "anthropic":
         return AnthropicClient(base_url=settings["base_url"], api_key=_api_key(settings))
@@ -253,11 +263,11 @@ def make_client(settings: dict[str, Any]) -> Any:
 
 def test_provider(settings: dict[str, Any]) -> dict[str, Any]:
     if settings["provider"] == "none":
-        return {"status": "ok", "message": "LLM disattivato. Le funzioni deterministiche restano disponibili."}
+        return {"status": "ok", "message": "LLM disabled. Deterministic functions remain available."}
     client = make_client(settings)
     answer = client.chat(
         model=settings["model"],
-        messages=[{"role": "user", "content": "Rispondi solo con: ok"}],
+        messages=[{"role": "user", "content": "Respond only with: ok"}],
         temperature=0,
     )
     return {"status": "ok", "message": answer.strip()[:200] or "ok"}
@@ -273,7 +283,7 @@ class OpenAICompatibleClient:
 
     def chat(self, model: str, messages: list[dict[str, str]], temperature: float = 0.0) -> str:
         if self.api_key_required and not self.api_key:
-            raise RuntimeError(f"Configura {self.provider_label}: API key mancante.")
+            raise RuntimeError(f"Configure {self.provider_label}: missing API key.")
         headers = {"Content-Type": "application/json"}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
@@ -287,7 +297,7 @@ class OpenAICompatibleClient:
         try:
             return str(body["choices"][0]["message"]["content"])
         except (KeyError, IndexError, TypeError) as exc:
-            raise RuntimeError(f"Risposta inattesa da {self.provider_label}: {body}") from exc
+            raise RuntimeError(f"Unexpected response from {self.provider_label}: {body}") from exc
 
 
 class AnthropicClient:
@@ -298,7 +308,7 @@ class AnthropicClient:
 
     def chat(self, model: str, messages: list[dict[str, str]], temperature: float = 0.0) -> str:
         if not self.api_key:
-            raise RuntimeError("Configura Claude/Anthropic: API key mancante.")
+            raise RuntimeError("Configure Claude/Anthropic: missing API key.")
         system_parts: list[str] = []
         user_messages: list[dict[str, str]] = []
         for message in messages:
@@ -330,19 +340,23 @@ class AnthropicClient:
             parts = body["content"]
             return "".join(str(part.get("text") or "") for part in parts if part.get("type") == "text")
         except (KeyError, TypeError) as exc:
-            raise RuntimeError(f"Risposta inattesa da Claude/Anthropic: {body}") from exc
+            raise RuntimeError(f"Unexpected response from Claude/Anthropic: {body}") from exc
 
 
 class NoLLMClient:
     def chat(self, model: str, messages: list[dict[str, str]], temperature: float = 0.0) -> str:
-        raise RuntimeError("Provider LLM disattivato nelle impostazioni.")
+        raise RuntimeError("LLM provider is disabled in settings.")
 
 
 def _post_json(url: str, payload: dict[str, Any], *, headers: dict[str, str], timeout: int) -> dict[str, Any]:
+    final_headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Judicex/0.2.0",
+        **headers,
+    }
     request = Request(
         url,
         data=json.dumps(payload).encode("utf-8"),
-        headers=headers,
+        headers=final_headers,
         method="POST",
     )
     try:
@@ -352,7 +366,7 @@ def _post_json(url: str, payload: dict[str, Any], *, headers: dict[str, str], ti
         detail = exc.read().decode("utf-8", errors="ignore")
         raise RuntimeError(f"LLM HTTP error {exc.code}: {detail}") from exc
     except URLError as exc:
-        raise RuntimeError(f"Provider LLM non raggiungibile: {exc}") from exc
+        raise RuntimeError(f"LLM provider unreachable: {exc}") from exc
 
 
 def _api_key(settings: dict[str, Any]) -> str:

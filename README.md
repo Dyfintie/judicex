@@ -150,7 +150,7 @@ the product thesis.
 ## Quick start
 
 ```bash
-git clone https://github.com/JustVugg/judicex.git
+git clone https://github.com/Dyfintie/judicex.git
 cd judicex
 python3 -m venv .venv
 source .venv/bin/activate
@@ -158,7 +158,7 @@ pip install -e ".[crypto]"
 cp .env.example .env
 
 judicex init-db --db ./memory.db
-judicex web --db ./memory.db --area civile --port 5051
+judicex web --db ./memory.db --area civil --port 5051
 ```
 
 Then open <http://127.0.0.1:5051>.
@@ -173,6 +173,15 @@ pip install -e ".[crypto,ocr]"
 
 Judicex reads provider settings from the in-app **Settings** page and from
 environment variables. API keys are kept out of the frontend on purpose.
+
+**Groq (ultra-fast inference):**
+
+```env
+JUDICEX_LLM_PROVIDER=groq
+GROQ_API_KEY=...
+GROQ_MODEL=qwen/qwen3.8-27b
+GROQ_BASE_URL=https://api.groq.com/openai/v1
+```
 
 **Local Ollama** (default, fully offline):
 
@@ -222,24 +231,24 @@ Synthetic demo database:
 
 ```bash
 python scripts/create_demo.py --db ./memory.demo.db
-judicex web --db ./memory.demo.db --area civile --port 5051
+judicex web --db ./memory.demo.db --area civil --port 5051
 ```
 
 CLI examples:
 
 ```bash
-judicex matter-create   --db ./memory.db --title "Recupero credito Beta" \
-                        --client-name "Alfa S.r.l." --area civile
+judicex matter-create   --db ./memory.db --title "Debt Recovery - Alfa v. Beta" \
+                        --client-name "Alfa Corp" --area civil
 judicex matter-add-doc  --db ./memory.db --matter-id "matter:..." \
                         --file ./examples/demo_matter.md --kind memo
 judicex matter-context  --db ./memory.db --matter-id "matter:..." \
-                        --query "fattura pagamento"
+                        --query "invoice payment"
 judicex list-workflow-packs --db ./memory.db
 judicex matter-analyze  --db ./memory.db --matter-id "matter:..." \
-                        --thesis "ricorso per decreto ingiuntivo"
-judicex ask             --db ./memory.db --provider ollama --model qwen2.5:7b \
-                        --area civile --matter-id "matter:..." \
-                        --question "Che elementi mancano?"
+                        --thesis "debt recovery and payment order"
+judicex ask             --db ./memory.db --provider groq --model qwen/qwen3.8-27b \
+                        --area civil --matter-id "matter:..." \
+                        --question "What key proof elements are missing?"
 ```
 
 Operational notes are separate from legal sources. Legal sources hold
@@ -249,10 +258,10 @@ recurring strategies, and matter-specific notes.
 
 ```bash
 judicex memory-add    --db ./memory.db --kind preference \
-                      --title "Stile recupero crediti" \
-                      --content "Per recupero crediti B2B usa tono pratico." \
-                      --tag recupero_crediti --importance 0.9
-judicex memory-search --db ./memory.db --query "recupero crediti"
+                      --title "Debt recovery style" \
+                      --content "For commercial debt recovery use a direct, practical tone." \
+                      --tag debt_recovery --importance 0.9
+judicex memory-search --db ./memory.db --query "debt recovery"
 ```
 
 ## Self-host or cloud — your call

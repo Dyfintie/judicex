@@ -194,82 +194,82 @@ const viewConfig = {
   chat: {
     path: "/chat",
     title: "Chat",
-    subtitle: "Domande, upload rapido e risposte con fonti verificabili.",
+    subtitle: "Questions, quick uploads, and grounded answers with verifiable sources.",
   },
   onboarding: {
     path: "/onboarding",
-    title: "Primo avvio",
-    subtitle: "Configura Judicex in pochi passaggi: fascicolo, documenti, fonti e prima domanda.",
+    title: "Getting Started",
+    subtitle: "Set up Judicex in a few steps: matter, documents, sources, and first query.",
   },
   search: {
     path: "/search",
-    title: "Cerca",
-    subtitle: "Trova chat, messaggi, fascicoli, documenti, fatti e memoria assistente.",
+    title: "Search",
+    subtitle: "Find chats, messages, matters, documents, facts, and assistant memories.",
   },
   dashboard: {
     path: "/dashboard",
-    title: "Dashboard fascicolo",
-    subtitle: "Vista sintetica di KPI, parti, importi, scadenze, timeline e copertura documentale.",
+    title: "Matter Dashboard",
+    subtitle: "Summary view of KPIs, parties, amounts, deadlines, timeline, and document coverage.",
   },
   documents: {
     path: "/documents",
-    title: "Documenti",
-    subtitle: "Caricamento, anteprima, download, cartelle, OCR, annotazioni e revisioni.",
+    title: "Documents",
+    subtitle: "Upload, preview, download, folders, OCR, annotations, and revisions.",
   },
   workflows: {
     path: "/workflows",
     title: "Workflow",
-    subtitle: "Costruzione, versionamento, duplicazione, cancellazione ed esecuzione dei workflow sul fascicolo.",
+    subtitle: "Build, version, duplicate, delete, and execute workflows on the matter.",
   },
   tables: {
     path: "/tables",
-    title: "Tabelle",
-    subtitle: "Tabular review modificabile con filtri, ordinamento, viste salvate ed export.",
+    title: "Tables",
+    subtitle: "Editable tabular review with filtering, sorting, saved views, and export.",
   },
   drafts: {
     path: "/drafts",
-    title: "Atti",
-    subtitle: "Generazione atti, preview e editor template guidato.",
+    title: "Drafts",
+    subtitle: "Legal draft generation, live preview, and guided template editor.",
   },
   tools: {
     path: "/tools",
     title: "Tool",
-    subtitle: "Esecuzione diretta dei tool di memoria e ricerca interna.",
+    subtitle: "Direct execution of memory and internal search tools.",
   },
   settings: {
     path: "/settings",
-    title: "Centro Judicex",
-    subtitle: "Accesso a fascicoli, documenti, workflow, tabelle, atti, tool e configurazione AI.",
+    title: "Judicex Hub",
+    subtitle: "Access to matters, documents, workflows, tables, drafts, tools, and AI configuration.",
   },
   provider: {
     path: "/provider-ai",
-    title: "Provider AI",
-    subtitle: "Scegli provider, endpoint e modello senza modificare codice o variabili interne.",
+    title: "AI Providers",
+    subtitle: "Choose provider, endpoint, and model without changing code or internal variables.",
   },
   memory: {
     path: "/memory",
-    title: "Memoria assistente",
-    subtitle: "Preferenze, lezioni operative e note che guidano il modo di lavorare di Judicex.",
+    title: "Assistant Memory",
+    subtitle: "Preferences, operational lessons, and notes guiding Judicex's behavior.",
   },
   sources: {
     path: "/sources",
-    title: "Fonti normative",
-    subtitle: "Importa raccolte ufficiali nel database locale con un click.",
+    title: "Legal Sources",
+    subtitle: "Import official source collections into the local database with one click.",
   },
   security: {
     path: "/security",
-    title: "Sicurezza locale",
-    subtitle: "Imposta una password locale per proteggere la memoria sul computer.",
+    title: "Local Security",
+    subtitle: "Set a local password to protect memory on this computer.",
   },
   backup: {
     path: "/backup",
-    title: "Backup e ripristino",
-    subtitle: "Esporta o ripristina database SQLite e allegati locali.",
+    title: "Backup & Restore",
+    subtitle: "Export or restore SQLite database and local attachments.",
   },
   matters: {
     path: "/matters",
-    title: "Fascicoli",
-    subtitle: "Selezione e creazione fascicoli.",
+    title: "Matters",
+    subtitle: "Select and create legal matters.",
   },
 };
 
@@ -424,13 +424,13 @@ function renderChatSessions() {
       const active = session.id === state.activeChatSessionId;
       const count = Number(session.message_count || 0);
       return `
-        <button data-chat-session-id="${escapeHtml(session.id)}" class="chat-session-item nav-row ${active ? "is-active" : ""} mb-1 min-w-0 w-full rounded-md px-2.5 py-2 text-left" title="Tasto destro per eliminare">
-          <div class="truncate text-sm text-gray-800">${escapeHtml(session.title || "Nuova chat")}</div>
-          <div class="mt-0.5 text-xs text-gray-500">${escapeHtml(count)} messaggi</div>
+        <button data-chat-session-id="${escapeHtml(session.id)}" class="chat-session-item nav-row ${active ? "is-active" : ""} mb-1 min-w-0 w-full rounded-md px-2.5 py-2 text-left" title="Right-click to delete">
+          <div class="truncate text-sm text-gray-800">${escapeHtml(session.title || "New chat")}</div>
+          <div class="mt-0.5 text-xs text-gray-500">${escapeHtml(count)} messages</div>
         </button>
       `;
     }).join("")
-    : `<div class="px-3 py-3 text-sm text-gray-500">Nessuna chat salvata.</div>`;
+    : `<div class="px-3 py-3 text-sm text-gray-500">No saved chats.</div>`;
   document.querySelectorAll(".chat-session-item").forEach((button) => {
     button.addEventListener("click", () => loadChatSession(button.dataset.chatSessionId));
     button.addEventListener("contextmenu", (event) => {
@@ -449,7 +449,7 @@ function openChatDeleteModal(sessionId) {
   const session = findChatSession(sessionId);
   state.pendingDeleteChatSessionId = sessionId;
   if (els.chatDeleteModalText) {
-    els.chatDeleteModalText.textContent = `La chat "${session?.title || "Nuova chat"}" verra eliminata definitivamente.`;
+    els.chatDeleteModalText.textContent = `La chat "${session?.title || "New chat"}" will be permanently deleted.`;
   }
   els.chatDeleteModal.classList.remove("hidden");
   els.chatDeleteModal.classList.add("flex");
@@ -489,7 +489,7 @@ async function ensureChatSession(seedTitle = "") {
   if (state.activeChatSessionId && state.chatSessions.some((session) => session.id === state.activeChatSessionId)) {
     return state.activeChatSessionId;
   }
-  const title = seedTitle ? seedTitle.replace(/\s+/g, " ").slice(0, 70) : "Nuova chat";
+  const title = seedTitle ? seedTitle.replace(/\s+/g, " ").slice(0, 70) : "New chat";
   const session = await createChatSession({title, select: true});
   return session.id;
 }
@@ -551,7 +551,7 @@ async function loadState() {
   state.agentMemories = payload.agent_memories || [];
   state.officialBundles = payload.official_bundles || [];
   state.onboarding = payload.onboarding || {completed: false};
-  els.healthBadge.textContent = `${payload.health?.matters || 0} fascicoli`;
+  els.healthBadge.textContent = `${payload.health?.matters || 0} matters`;
   renderWorkflowOptions(payload.workflow_packs || []);
   await loadAuthStatus();
   if (!state.draftTemplates.length) await loadDraftTemplates();
@@ -591,7 +591,7 @@ function renderWorkflowOptions(workflowPacks) {
       const source = pack.source === "sqlite" ? " · creato" : "";
       return `<option value="${escapeHtml(pack.id)}">${escapeHtml(pack.label || pack.id)}${escapeHtml(source)}</option>`;
     }).join("")
-    : `<option value="">Nessun workflow</option>`;
+    : `<option value="">No workflow</option>`;
 }
 
 function renderMatterList() {
@@ -605,7 +605,7 @@ function renderMatterList() {
         </button>
       `;
     }).join("")
-    : `<div class="px-3 py-6 text-sm text-muted">Nessun fascicolo.</div>`;
+    : `<div class="px-3 py-6 text-sm text-muted">No matters.</div>`;
   document.querySelectorAll(".matter-item").forEach((item) => {
     item.addEventListener("click", () => selectMatter(item.dataset.matterId));
   });
@@ -628,7 +628,7 @@ async function selectMatter(matterId) {
 function renderActiveMatter() {
   const matter = activeMatter();
   if (!matter) {
-    els.activeMatterTitle.textContent = "Nessun fascicolo";
+    els.activeMatterTitle.textContent = "No matter selected";
     els.activeMatterMeta.textContent = "Workspace legale verificabile";
     return;
   }
@@ -639,7 +639,7 @@ function renderActiveMatter() {
 async function refreshMatterContext() {
   if (!state.activeMatterId) {
     state.lastContext = null;
-    els.factsPanel.innerHTML = `<div class="text-muted">Nessun fascicolo selezionato.</div>`;
+    els.factsPanel.innerHTML = `<div class="text-muted">No matter selected selezionato.</div>`;
     renderDedicatedView();
     return;
   }
@@ -658,7 +658,7 @@ async function refreshMatterContext() {
   ].slice(0, 12);
   els.factsPanel.innerHTML = facts.length
     ? facts.map(renderFact).join("")
-    : `<div class="text-muted">Nessun fatto estratto.</div>`;
+    : `<div class="text-muted">No facts extracted.</div>`;
   renderDedicatedView();
 }
 
@@ -668,7 +668,7 @@ function renderMatterDocuments(documents) {
     els.documentCount.textContent = documents.length ? `${documents.length}` : "";
   }
   const folderOptions = (selected) => [
-    `<option value="">Nessuna cartella</option>`,
+    `<option value="">No folder</option>`,
     ...state.folders.map((folder) => `<option value="${escapeHtml(folder.id)}" ${folder.id === selected ? "selected" : ""}>${escapeHtml(folder.name)}</option>`),
   ].join("");
   els.documentsPanel.innerHTML = documents.length
@@ -693,7 +693,7 @@ function renderMatterDocuments(documents) {
         </div>
       `;
     }).join("")
-    : `<div class="rounded-md border border-line bg-white px-3 py-6 text-center text-sm text-gray-500">Nessun documento nel fascicolo.</div>`;
+    : `<div class="rounded-md border border-line bg-white px-3 py-6 text-center text-sm text-gray-500">No documents in this matter.</div>`;
   document.querySelectorAll(".open-document").forEach((button) => {
     button.addEventListener("click", () => openMatterDocument(button.dataset.documentId));
   });
@@ -727,7 +727,7 @@ function renderFolders() {
         <span class="ml-2 shrink-0 text-xs text-gray-400">${escapeHtml(folder.document_count || 0)}</span>
       </div>
     `).join("")
-    : `<div class="rounded-md border border-line bg-gray-50 px-3 py-3 text-xs text-gray-500">Nessuna cartella.</div>`;
+    : `<div class="rounded-md border border-line bg-gray-50 px-3 py-3 text-xs text-gray-500">No folders.</div>`;
 }
 
 async function openMatterDocument(documentId, options = {}) {
@@ -806,7 +806,7 @@ function renderAnnotations(annotations) {
         <div class="mt-0.5 text-gray-600">${escapeHtml(annotation.note || "Annotazione")}</div>
       </div>
     `).join("")
-    : `<div class="rounded-md border border-line bg-gray-50 px-2 py-2 text-gray-500">Nessuna annotazione.</div>`;
+    : `<div class="rounded-md border border-line bg-gray-50 px-2 py-2 text-gray-500">No annotations.</div>`;
   document.querySelectorAll(".delete-annotation").forEach((button) => {
     button.addEventListener("click", async () => {
       await api(`/api/document-annotations/${encodeURIComponent(button.dataset.annotationId)}`, {method: "DELETE"});
@@ -827,7 +827,7 @@ function renderComments(comments) {
         <div class="mt-0.5 text-gray-600">${escapeHtml(comment.body)}</div>
       </div>
     `).join("")
-    : `<div class="rounded-md border border-line bg-gray-50 px-2 py-2 text-gray-500">Nessun commento.</div>`;
+    : `<div class="rounded-md border border-line bg-gray-50 px-2 py-2 text-gray-500">No comments.</div>`;
   document.querySelectorAll(".resolve-comment").forEach((button) => {
     button.addEventListener("click", async () => {
       await api(`/api/document-comments/${encodeURIComponent(button.dataset.commentId)}`, {
@@ -853,7 +853,7 @@ function renderDocumentVersions(versions) {
         <div class="mt-0.5 text-gray-500">${escapeHtml(String(version.created_at || "").slice(0, 19))}</div>
       </div>
     `).join("")
-    : `<div class="rounded-md border border-line bg-gray-50 px-2 py-2 text-gray-500">Nessuna versione.</div>`;
+    : `<div class="rounded-md border border-line bg-gray-50 px-2 py-2 text-gray-500">No versions.</div>`;
   document.querySelectorAll(".compare-version").forEach((button) => {
     button.addEventListener("click", async () => {
       const payload = await api(`/api/matter-documents/${encodeURIComponent(state.activeDocumentId)}/versions/${encodeURIComponent(button.dataset.versionId)}/compare`);
@@ -1025,7 +1025,7 @@ function artifactTitleFromQuestion(question, content) {
   if (text.includes("memo") || text.includes("memorandum")) return "Memorandum legale";
   const firstLine = String(content || "").split(/\n/).map((line) => line.trim()).find(Boolean);
   if (firstLine && firstLine.length <= 90 && !firstLine.endsWith(".")) return firstLine;
-  return "Documento Judicex";
+  return "Judicex Document";
 }
 
 function artifactContentFromResult(result) {
@@ -1100,16 +1100,16 @@ async function maybeCreateArtifactFromChat(question, result) {
       return payload.artifact;
     }
   } catch (error) {
-    appendMessage("assistant", `Non sono riuscito a creare il file: ${error.message}`, "documento");
+    appendMessage("assistant", `Failed to create file: ${error.message}`, "documento");
   }
   return null;
 }
 
 function appendArtifactCard(artifact, document = null) {
-  const title = artifact?.title || "Documento Judicex";
+  const title = artifact?.title || "Judicex Document";
   const format = artifactFormatLabel(artifact?.format);
   const downloadUrl = artifactDownloadUrl(artifact, artifact?.format || "docx");
-  const docLine = document?.id ? "Salvato anche nei documenti del fascicolo." : "Salvato nella chat come documento generato.";
+  const docLine = document?.id ? "Also saved to matter documents." : "Saved in chat as generated document.";
   const html = `
     <div class="mb-4 flex justify-start">
       <div class="w-full max-w-3xl rounded-lg border border-line bg-white px-4 py-3 shadow-sm">
@@ -1119,7 +1119,7 @@ function appendArtifactCard(artifact, document = null) {
             <div class="mt-1 text-xs leading-5 text-gray-500">${escapeHtml(format)} pronto. ${escapeHtml(docLine)}</div>
           </div>
           <div class="flex shrink-0 flex-wrap gap-2">
-            <button data-artifact-open="${escapeHtml(artifact.id)}" class="h-8 rounded-md border border-line px-3 text-xs text-gray-700 hover:bg-gray-50" type="button">Anteprima</button>
+            <button data-artifact-open="${escapeHtml(artifact.id)}" class="h-8 rounded-md border border-line px-3 text-xs text-gray-700 hover:bg-gray-50" type="button">Preview</button>
             <a class="h-8 rounded-md bg-ink px-3 py-2 text-xs font-medium text-white hover:bg-black" href="${downloadUrl}">Scarica</a>
           </div>
         </div>
@@ -1140,13 +1140,13 @@ async function openArtifactById(artifactId) {
 function openArtifactPreview(artifact) {
   if (!artifact || !els.artifactPanel) return;
   state.activeArtifact = artifact;
-  els.artifactTitle.textContent = artifact.title || "Documento Judicex";
+  els.artifactTitle.textContent = artifact.title || "Judicex Document";
   els.artifactMeta.textContent = `${artifactFormatLabel(artifact.format)} generato da Judicex`;
   els.artifactPreviewContent.textContent = artifact.content || artifact.excerpt || "";
   const id = encodeURIComponent(artifact.id);
   if (els.artifactDownloadNative) {
     els.artifactDownloadNative.href = `/api/artifacts/${id}/download?format=${encodeURIComponent(artifact.format || "docx")}`;
-    els.artifactDownloadNative.textContent = `Scarica ${artifactFormatLabel(artifact.format)}`;
+    els.artifactDownloadNative.textContent = `Download ${artifactFormatLabel(artifact.format)}`;
   }
   if (els.artifactDownloadDocx) {
     els.artifactDownloadDocx.href = `/api/artifacts/${id}/download?format=docx`;
@@ -1183,9 +1183,9 @@ function answerStatusLabel(status) {
   const normalized = String(status || "").toLowerCase();
   return {
     operational: "risposta pronta",
-    grounded: "con fonti",
-    limited: "con fonti parziali",
-    abstain: "servono fonti",
+    grounded: "grounded with sources",
+    limited: "grounded with sources parziali",
+    abstain: "needs sources",
     chat: "judicex",
     analysis: "analisi",
   }[normalized] || "judicex";
@@ -1248,7 +1248,7 @@ function renderAgentTrace(trace) {
   wrap.innerHTML = `
     <div class="w-full max-w-3xl rounded-lg border border-line bg-panel px-4 py-3 shadow-soft">
       <div class="mb-3 flex items-center justify-between gap-3">
-        <div class="text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">Attivita assistente</div>
+        <div class="text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">Draftsvita assistente</div>
         <div class="text-[12px] text-subtle">${escapeHtml(trace.length)} passaggi</div>
       </div>
       <div class="space-y-2">
@@ -1269,7 +1269,7 @@ function renderSources(citations) {
         <div class="mt-1 break-all text-xs text-muted">${escapeHtml(citation.source_ref)}</div>
       </div>
     `).join("")
-    : `<div class="text-muted">Nessuna fonte citata.</div>`;
+    : `<div class="text-muted">No sources cited.</div>`;
 }
 
 function renderAudit(payload) {
@@ -1292,7 +1292,7 @@ async function loadDraftTemplates() {
   state.draftTemplates = payload.templates || [];
   els.draftTemplateSelect.innerHTML = state.draftTemplates.length
     ? state.draftTemplates.map((template) => `<option value="${escapeHtml(template.id || template.name)}">${escapeHtml(template.title || template.name)}${template.source === "sqlite" ? " · creato" : ""}</option>`).join("")
-    : `<option value="">Nessun template</option>`;
+    : `<option value="">No templates</option>`;
 }
 
 async function loadTools() {
@@ -1301,7 +1301,7 @@ async function loadTools() {
   state.tools = payload.tools || [];
   els.toolSelect.innerHTML = state.tools.length
     ? state.tools.map((tool) => `<option value="${escapeHtml(tool.name)}">${escapeHtml(tool.name)}</option>`).join("")
-    : `<option value="">Nessun tool</option>`;
+    : `<option value="">No tools</option>`;
 }
 
 async function loadTabularReviews() {
@@ -1389,7 +1389,7 @@ function renderDedicatedView(view = state.currentView) {
   const config = viewConfig[view] || viewConfig.dashboard;
   if (els.pageTitle) els.pageTitle.textContent = config.title;
   if (els.pageSubtitle) els.pageSubtitle.textContent = config.subtitle;
-  if (els.pageEyebrow) els.pageEyebrow.textContent = activeMatter()?.title || "Nessun fascicolo";
+  if (els.pageEyebrow) els.pageEyebrow.textContent = activeMatter()?.title || "No matter selected";
   const renderers = {
     onboarding: renderDedicatedOnboarding,
     search: renderDedicatedSearch,
@@ -1418,11 +1418,11 @@ function renderDedicatedOnboarding() {
     <div class="grid gap-4 lg:grid-cols-[1.1fr_.9fr]">
       ${pageSection("Percorso consigliato", `
         <div class="space-y-3">
-          ${onboardingStep("1", "Scegli il motore AI", hasProvider, "Ollama locale, OpenAI, Claude o nessun LLM.", "provider")}
-          ${onboardingStep("2", "Crea un fascicolo", hasMatter, "Apri una pratica e collega documenti, chat e analisi.", "matters")}
-          ${onboardingStep("3", "Carica documenti", Boolean(currentContext().documents?.length), "PDF, DOCX, immagini, testo, CSV o JSON.", "documents")}
-          ${onboardingStep("4", "Importa fonti normative", hasSources, "Porta gli articoli nel database locale.", "sources")}
-          ${onboardingStep("5", "Fai la prima domanda", false, "Chiedi un parere operativo, una checklist o una bozza.", "chat")}
+          ${onboardingStep("1", "Choose AI Provider", hasProvider, "Local Ollama, Groq, OpenAI, Claude, or no LLM.", "provider")}
+          ${onboardingStep("2", "Create a Matter", hasMatter, "Open a case file and connect documents, chats, and analysis.", "matters")}
+          ${onboardingStep("3", "Upload Documents", Boolean(currentContext().documents?.length), "PDF, DOCX, images, text, CSV, or JSON.", "documents")}
+          ${onboardingStep("4", "Import Legal Sources", hasSources, "Bring articles into the local database.", "sources")}
+          ${onboardingStep("5", "Ask First Question", false, "Ask for operational advice, a checklist, or a draft.", "chat")}
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
           <button data-page-action="complete-onboarding" class="h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Segna completato</button>
@@ -1431,8 +1431,8 @@ function renderDedicatedOnboarding() {
       `)}
       ${pageSection("Metodo semplice", `
         <div class="space-y-3 text-sm leading-6 text-gray-600">
-          <p>Judicex lavora meglio quando ha un fascicolo, documenti e fonti. La memoria assistente conserva preferenze e lezioni operative, ma non sostituisce le fonti normative.</p>
-          <p>Per iniziare senza configurazioni: crea un fascicolo, carica almeno un documento e chiedi una checklist pratica.</p>
+          <p>Judicex works best with a matter, documents, and sources. Assistant memory preserves preferences and operational lessons, but does not replace legal sources.</p>
+          <p>To get started right away: create a matter, upload at least one document, and ask for a practical checklist.</p>
         </div>
       `)}
     </div>
@@ -1453,7 +1453,7 @@ function onboardingStep(number, title, done, text, view) {
 
 function renderDedicatedDashboard() {
   const context = currentContext();
-  if (!state.activeMatterId) return pageEmpty("Crea o seleziona un fascicolo per vedere la dashboard.");
+  if (!state.activeMatterId) return pageEmpty("Create or select a matter to view the dashboard.");
   const facts = [
     ...(context.parties || []),
     ...(context.amounts || []),
@@ -1465,9 +1465,9 @@ function renderDedicatedDashboard() {
       ${pageSection("Visualizzazioni", `
         <div class="text-xs">${renderVisualizationMarkup(state.visualizations || {}, "md:grid-cols-6")}</div>
       `)}
-      ${pageSection("Fatti principali", facts.length ? `
+      ${pageSection("Key Facts", facts.length ? `
         <div class="grid gap-2 md:grid-cols-2">${facts.slice(0, 10).map(renderFact).join("")}</div>
-      ` : `<div class="text-sm text-gray-500">Nessun fatto estratto.</div>`)}
+      ` : `<div class="text-sm text-gray-500">No facts extracted.</div>`)}
     </div>
   `;
 }
@@ -1477,19 +1477,19 @@ function renderDedicatedSearch() {
   const scopes = [
     ["all", "Tutto"],
     ["chat", "Chat"],
-    ["matters", "Fascicoli"],
-    ["documents", "Documenti"],
+    ["matters", "Matters"],
+    ["documents", "Documents"],
     ["facts", "Fatti"],
-    ["memory", "Memoria assistente"],
+    ["memory", "Assistant Memory"],
   ];
   return `
     ${pageSection("Ricerca", `
       <div class="space-y-2">
-        <input id="pageSearchQuery" class="h-10 rounded-md border border-line px-3 text-sm outline-none focus:border-ink" value="${escapeHtml(state.pageSearch.query || "")}" placeholder="Cerca una chat, un messaggio, un fascicolo, un documento...">
+        <input id="pageSearchQuery" class="h-10 rounded-md border border-line px-3 text-sm outline-none focus:border-ink" value="${escapeHtml(state.pageSearch.query || "")}" placeholder="Search for chats, messages, matters, documents...">
         <select id="pageSearchScope" class="h-10 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink">
           ${scopes.map(([value, label]) => `<option value="${value}" ${scope === value ? "selected" : ""}>${label}</option>`).join("")}
         </select>
-        <button data-page-action="run-search" class="h-10 rounded-md bg-ink px-4 text-sm font-medium text-white" type="button">Cerca</button>
+        <button data-page-action="run-search" class="h-10 rounded-md bg-ink px-4 text-sm font-medium text-white" type="button">Search</button>
       </div>
       <div id="pageSearchStatus" class="mt-3 text-sm text-gray-500">${escapeHtml(state.pageSearch.status || "")}</div>
     `)}
@@ -1500,7 +1500,7 @@ function renderDedicatedSearch() {
 function renderSearchResults() {
   const results = state.pageSearch.results || [];
   if (!results.length) {
-    return pageEmpty(state.pageSearch.query ? "Nessun risultato trovato." : "Scrivi una parola o premi Cerca per vedere gli elementi recenti.");
+    return pageEmpty(state.pageSearch.query ? "No results found." : "Scrivi una parola o premi Search per vedere gli elementi recenti.");
   }
   return `
     <div class="grid gap-3">
@@ -1533,8 +1533,8 @@ function searchTypeLabel(type) {
   return {
     chat: "Chat",
     message: "Messaggio",
-    matter: "Fascicolo",
-    document: "Documento",
+    matter: "Matter",
+    document: "Document",
     fact: "Fatto",
     memory: "Memoria",
   }[type] || "Risultato";
@@ -1546,15 +1546,15 @@ function formatDateShort(value) {
 
 function renderDedicatedDocuments() {
   const context = currentContext();
-  if (!state.activeMatterId) return pageEmpty("Crea o seleziona un fascicolo prima di gestire i documenti.");
+  if (!state.activeMatterId) return pageEmpty("Create or select a matter before managing documents.");
   const documents = context.documents || [];
   const upload = `
     <div class="flex flex-wrap items-center gap-2">
       <input id="pageFileInput" type="file" multiple class="hidden"
              accept=".pdf,.docx,.txt,.md,.markdown,.csv,.json,.png,.jpg,.jpeg,.webp,.tif,.tiff,.bmp,.gif,.heic,image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-      <button data-page-action="upload-docs" class="h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Carica documenti</button>
-      <input id="pageFolderName" class="h-9 min-w-56 rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Nuova cartella">
-      <button data-page-action="create-folder" class="h-9 rounded-md border border-line px-3 text-sm text-gray-700 hover:bg-gray-50" type="button">Crea cartella</button>
+      <button data-page-action="upload-docs" class="h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Upload Documents</button>
+      <input id="pageFolderName" class="h-9 min-w-56 rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="New folder">
+      <button data-page-action="create-folder" class="h-9 rounded-md border border-line px-3 text-sm text-gray-700 hover:bg-gray-50" type="button">Create folder</button>
       <a class="h-9 rounded-md border border-line px-3 py-2 text-sm text-gray-700 hover:bg-gray-50" href="/api/matters/${encodeURIComponent(state.activeMatterId)}/export?format=docx" target="_blank">Esporta DOCX</a>
       <a class="h-9 rounded-md border border-line px-3 py-2 text-sm text-gray-700 hover:bg-gray-50" href="/api/matters/${encodeURIComponent(state.activeMatterId)}/export?format=zip" target="_blank">Esporta ZIP</a>
       <span id="pageDocumentStatus" class="text-sm text-gray-500"></span>
@@ -1562,13 +1562,13 @@ function renderDedicatedDocuments() {
   `;
   const list = documents.length
     ? `<div class="grid gap-3 lg:grid-cols-2">${documents.map(renderPageDocumentCard).join("")}</div>`
-    : pageEmpty("Nessun documento nel fascicolo.");
+    : pageEmpty("No documents in this matter.");
   const viewer = renderPageDocumentViewer();
   return `
-    ${pageSection("Caricamento e cartelle", upload)}
+    ${pageSection("Uploads & Folders", upload)}
     <div class="space-y-4">
-      ${pageSection(`Documenti (${documents.length})`, list)}
-      ${pageSection("Viewer dedicato", viewer || `<div class="text-sm text-gray-500">Apri un documento per vedere anteprima, download e testo estratto.</div>`)}
+      ${pageSection(`Documents (${documents.length})`, list)}
+      ${pageSection("Dedicated Viewer", viewer || `<div class="text-sm text-gray-500">Open a document to see preview, download, and extracted text.</div>`)}
     </div>
   `;
 }
@@ -1596,7 +1596,7 @@ function renderPageDocumentViewer() {
   if (!document) return "";
   const preview = state.currentDocumentPreview || {};
   const native = preview.source_url && ["pdf", "image"].includes(preview.viewer)
-    ? `<iframe class="h-[520px] w-full rounded-md border border-line bg-white" src="${preview.source_url}${preview.viewer === "pdf" ? `#page=${state.pdfPage}&zoom=${Math.round(state.pdfZoom * 100)}` : ""}" title="Anteprima documento"></iframe>`
+    ? `<iframe class="h-[520px] w-full rounded-md border border-line bg-white" src="${preview.source_url}${preview.viewer === "pdf" ? `#page=${state.pdfPage}&zoom=${Math.round(state.pdfZoom * 100)}` : ""}" title="Document preview"></iframe>`
     : "";
   return `
     <div class="mb-3">
@@ -1619,7 +1619,7 @@ function renderDedicatedWorkflows() {
   state.pageWorkflow.selectedId = selected;
   const options = packs.length
     ? packs.map((pack) => `<option value="${escapeHtml(pack.id)}" ${pack.id === selected ? "selected" : ""}>${escapeHtml(pack.label || pack.id)}${pack.source === "sqlite" ? " · creato" : ""}</option>`).join("")
-    : `<option value="">Nessun workflow</option>`;
+    : `<option value="">No workflow</option>`;
   return `
     <div class="space-y-4">
       ${pageSection("Esecuzione", `
@@ -1635,7 +1635,7 @@ function renderDedicatedWorkflows() {
       `)}
       ${pageSection("Builder workflow", `
         <input id="pageWorkflowLabel" class="h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Nome workflow" value="${escapeHtml(state.pageWorkflow.label || "")}">
-        <textarea id="pageWorkflowRequirements" rows="12" class="mt-3 w-full resize-y rounded-md border border-line p-3 font-mono text-xs leading-5 outline-none focus:border-ink" placeholder="Un requisito per riga: Etichetta | parole fatto | parole documento | obbligatorio/opzionale | suggerimento">${escapeHtml(state.pageWorkflow.requirements || "")}</textarea>
+        <textarea id="pageWorkflowRequirements" rows="12" class="mt-3 w-full resize-y rounded-md border border-line p-3 font-mono text-xs leading-5 outline-none focus:border-ink" placeholder="One requirement per line: Label | fact keywords | doc keywords | required/optional | suggestion">${escapeHtml(state.pageWorkflow.requirements || "")}</textarea>
         <div class="mt-3 flex flex-wrap gap-2">
           <button data-page-action="create-workflow" class="h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Crea e usa</button>
           <button data-page-action="update-workflow" class="h-9 rounded-md border border-line px-3 text-sm text-gray-700 hover:bg-gray-50" type="button">Aggiorna selezionato</button>
@@ -1647,7 +1647,7 @@ function renderDedicatedWorkflows() {
 }
 
 function renderDedicatedTables() {
-  if (!state.activeMatterId) return pageEmpty("Crea o seleziona un fascicolo prima di creare tabelle.");
+  if (!state.activeMatterId) return pageEmpty("Create or select a matter before creating tables.");
   const reviews = state.tabularReviews || [];
   const list = reviews.length
     ? reviews.map((review) => `
@@ -1656,13 +1656,13 @@ function renderDedicatedTables() {
         <div class="mt-0.5 text-xs text-gray-500">${escapeHtml(review.row_count || 0)} righe</div>
       </button>
     `).join("")
-    : `<div class="text-sm text-gray-500">Nessuna tabella salvata.</div>`;
-  const table = state.activeReview ? renderPageReviewTable(state.activeReview) : `<div class="text-sm text-gray-500">Crea o apri una tabella per modificarla.</div>`;
+    : `<div class="text-sm text-gray-500">No saved tables.</div>`;
+  const table = state.activeReview ? renderPageReviewTable(state.activeReview) : `<div class="text-sm text-gray-500">Create or open a table to edit it.</div>`;
   return `
     <div class="space-y-4">
-      ${pageSection("Tabelle salvate", `
-        <input id="pageTabularQuery" class="h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Filtro tabella" value="${escapeHtml(state.pageReview.query || "")}">
-        <button data-page-action="create-review" class="mt-2 h-9 w-full rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Crea tabella</button>
+      ${pageSection("Tables salvate", `
+        <input id="pageTabularQuery" class="h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Table filter" value="${escapeHtml(state.pageReview.query || "")}">
+        <button data-page-action="create-review" class="mt-2 h-9 w-full rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Create table</button>
         <div id="pageReviewStatus" class="mt-2 text-sm text-gray-500">${escapeHtml(state.pageReview.status || "")}</div>
         <div class="mt-4 max-h-[520px] overflow-auto">${list}</div>
       `)}
@@ -1682,7 +1682,7 @@ function renderPageReviewTable(review) {
         ${columns.map((column) => `<option value="${escapeHtml(column.key)}" ${state.activeReviewSortKey === column.key ? "selected" : ""}>${escapeHtml(column.label || column.key)}</option>`).join("")}
       </select>
       <input id="pageReviewViewName" class="h-8 rounded-md border border-line px-3 text-xs outline-none focus:border-ink" placeholder="Nome vista" value="${escapeHtml(state.pageReview.viewName || "")}">
-      <button data-page-action="save-review-view" class="h-8 rounded-md border border-line px-3 text-xs text-gray-700 hover:bg-gray-50" type="button">Salva vista</button>
+      <button data-page-action="save-review-view" class="h-8 rounded-md border border-line px-3 text-xs text-gray-700 hover:bg-gray-50" type="button">Save view</button>
       <a class="h-8 rounded-md border border-line px-3 py-2 text-xs text-gray-700 hover:bg-gray-50" href="/api/tabular-reviews/${encodeURIComponent(review.id)}/export?format=csv" target="_blank">CSV</a>
       <a class="h-8 rounded-md border border-line px-3 py-2 text-xs text-gray-700 hover:bg-gray-50" href="/api/tabular-reviews/${encodeURIComponent(review.id)}/export?format=xlsx" target="_blank">XLSX</a>
       <a class="h-8 rounded-md border border-line px-3 py-2 text-xs text-gray-700 hover:bg-gray-50" href="/api/tabular-reviews/${encodeURIComponent(review.id)}/export?format=docx" target="_blank">DOCX</a>
@@ -1693,7 +1693,7 @@ function renderPageReviewTable(review) {
         <tbody>
           ${rows.length ? rows.map(({row, originalIndex}) => `
             <tr>${columns.map((column) => `<td class="min-w-[150px] max-w-[280px] align-top border border-line px-2 py-1"><div contenteditable="true" data-row-index="${originalIndex}" data-key="${escapeHtml(column.key)}" class="page-editable-cell min-h-5 outline-none">${escapeHtml(row[column.key] || "")}</div></td>`).join("")}</tr>
-          `).join("") : `<tr><td class="border border-line px-2 py-2 text-gray-500" colspan="${columns.length || 1}">Nessuna riga.</td></tr>`}
+          `).join("") : `<tr><td class="border border-line px-2 py-2 text-gray-500" colspan="${columns.length || 1}">No rows.</td></tr>`}
         </tbody>
       </table>
     </div>
@@ -1710,16 +1710,16 @@ function renderDedicatedDrafts() {
       const value = template.id || template.name;
       return `<option value="${escapeHtml(value)}" ${value === selected ? "selected" : ""}>${escapeHtml(template.title || template.name)}${template.source === "sqlite" ? " · creato" : ""}</option>`;
     }).join("")
-    : `<option value="">Nessun template</option>`;
+    : `<option value="">No templates</option>`;
   const previewText = state.pageDraft.preview || "";
-  const previewTitle = state.pageDraft.previewTitle || "Anteprima atto";
-  const previewMeta = state.pageDraft.previewMeta || (previewText ? "Bozza generata" : "Nessuna bozza ancora");
+  const previewTitle = state.pageDraft.previewTitle || "Draft preview";
+  const previewMeta = state.pageDraft.previewMeta || (previewText ? "Generated draft" : "No draft yet");
   const previewBody = previewText
     ? `<article class="judicex-paper">${escapeHtml(previewText)}</article>`
     : `<div class="flex h-full min-h-[420px] flex-col items-center justify-center gap-2 text-center">
          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" class="text-gray-300"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
-         <div class="text-sm font-medium text-gray-500">L'anteprima dell'atto apparira qui</div>
-         <div class="max-w-xs text-xs leading-5 text-gray-400">Scrivi a sinistra cosa deve preparare Judicex e premi <span class="font-medium text-gray-600">Prepara atto</span>. Il documento viene impaginato come un foglio Word.</div>
+         <div class="text-sm font-medium text-gray-500">Draft preview will appear here</div>
+         <div class="max-w-xs text-xs leading-5 text-gray-400">Write on the left what Judicex should draft and click <span class="font-medium text-gray-600">Prepare draft</span>. The document is formatted like a Word page.</div>
        </div>`;
   return `
     <div class="judicex-drafts-split grid gap-4 lg:grid-cols-[minmax(360px,440px)_1fr]">
@@ -1734,19 +1734,19 @@ function renderDedicatedDrafts() {
             <input id="pageDraftAsOfDate" class="h-10 rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Data norme" value="${escapeHtml(asOfDate)}">
           </div>
           <div class="mt-3 flex flex-wrap gap-2">
-            <button data-page-action="assistant-draft" class="h-10 rounded-md bg-ink px-4 text-sm font-medium text-white" type="button">Prepara atto</button>
-            <button data-page-action="preview-draft" class="h-10 rounded-md border border-line px-3 text-sm text-gray-700 hover:bg-gray-50" type="button">Anteprima manuale</button>
+            <button data-page-action="assistant-draft" class="h-10 rounded-md bg-ink px-4 text-sm font-medium text-white" type="button">Prepare draft</button>
+            <button data-page-action="preview-draft" class="h-10 rounded-md border border-line px-3 text-sm text-gray-700 hover:bg-gray-50" type="button">Manual preview</button>
           </div>
           <div id="pageDraftStatus" class="mt-3 text-sm text-gray-500">${escapeHtml(state.pageDraft.status || "")}</div>
         `)}
         <details class="rounded-md border border-line bg-white">
           <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-700">Compilazione manuale</summary>
           <div class="border-t border-line p-4">
-            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500" for="pageDraftParams">Dati dell'atto</label>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500" for="pageDraftParams">Draft Data</label>
             <textarea id="pageDraftParams" rows="8" class="mt-1 w-full resize-y rounded-md border border-line p-3 text-sm leading-6 outline-none focus:border-ink" placeholder="attore: Mario Rossi&#10;convenuto: Beta S.r.l.&#10;tribunale: Milano&#10;oggetto: recupero credito">${escapeHtml(state.pageDraft.params || "")}</textarea>
             <div class="mt-2 text-xs text-gray-500">Scrivi un dato per riga nel formato nome: valore.</div>
             <div class="mt-3 flex flex-wrap gap-2">
-              <button data-page-action="create-draft" class="h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Genera e salva</button>
+              <button data-page-action="create-draft" class="h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Generate & save</button>
             </div>
           </div>
         </details>
@@ -1755,8 +1755,8 @@ function renderDedicatedDrafts() {
           <div class="border-t border-line p-4">
             <input id="pageDraftTemplateTitle" class="h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Titolo template" value="${escapeHtml(state.pageDraft.title || "")}">
             <input id="pageDraftTemplateParams" class="mt-3 h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Campi richiesti: attore, convenuto, tribunale" value="${escapeHtml(state.pageDraft.paramList || "")}">
-            <textarea id="pageDraftTemplateBody" rows="14" class="mt-3 w-full resize-y rounded-md border border-line p-3 text-sm leading-6 outline-none focus:border-ink" placeholder="Testo dell'atto. Usa {attore}, {convenuto}, {tribunale} dove vuoi inserire i dati.">${escapeHtml(state.pageDraft.body || "")}</textarea>
-            <button data-page-action="save-draft-template" class="mt-3 h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Salva template</button>
+            <textarea id="pageDraftTemplateBody" rows="14" class="mt-3 w-full resize-y rounded-md border border-line p-3 text-sm leading-6 outline-none focus:border-ink" placeholder="Draft text. Use {claimant}, {defendant}, {court} where you want to insert data.">${escapeHtml(state.pageDraft.body || "")}</textarea>
+            <button data-page-action="save-draft-template" class="mt-3 h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Save template</button>
           </div>
         </details>
       </div>
@@ -1786,7 +1786,7 @@ function renderDedicatedTools() {
   state.pageTool.selectedName = selected;
   const options = tools.length
     ? tools.map((tool) => `<option value="${escapeHtml(tool.name)}" ${tool.name === selected ? "selected" : ""}>${escapeHtml(tool.name)}</option>`).join("")
-    : `<option value="">Nessun tool</option>`;
+    : `<option value="">No tools</option>`;
   const selectedTool = tools.find((tool) => tool.name === selected);
   return pageSection("Esecuzione tool", `
     <div class="space-y-4">
@@ -1825,10 +1825,10 @@ function renderDedicatedMemory() {
         ${(item.tags || []).length ? `<div class="mt-3 flex flex-wrap gap-1">${(item.tags || []).map((tag) => `<span class="rounded-full border border-line bg-gray-50 px-2 py-1 text-[11px] text-gray-500">${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
       </article>
     `).join("")
-    : pageEmpty("Nessuna memoria assistente salvata.");
+    : pageEmpty("No assistant memories saved.");
   return `
     <div class="grid gap-4 lg:grid-cols-[.9fr_1.1fr]">
-      ${pageSection(state.pageMemory.editingId ? "Modifica memoria" : "Nuova memoria", `
+      ${pageSection(state.pageMemory.editingId ? "Edit Memory" : "New Memory", `
         <label class="text-xs font-semibold uppercase tracking-wide text-gray-500" for="pageMemoryKind">Tipo</label>
         <select id="pageMemoryKind" class="mt-1 h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink">
           ${["preference", "instruction", "lesson", "decision", "note"].map((kind) => `<option value="${kind}" ${state.pageMemory.kind === kind ? "selected" : ""}>${memoryKindLabel(kind)}</option>`).join("")}
@@ -1843,7 +1843,7 @@ function renderDedicatedMemory() {
         <div class="mt-3 text-sm text-gray-500">${escapeHtml(state.pageMemory.status || "")}</div>
       `)}
       ${pageSection("Memorie salvate", `
-        <input id="pageMemoryQuery" class="h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Cerca nella memoria assistente" value="${escapeHtml(query)}">
+        <input id="pageMemoryQuery" class="h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Search nella memoria assistente" value="${escapeHtml(query)}">
         <div class="mt-3 grid gap-3">${list}</div>
       `)}
     </div>
@@ -1898,7 +1898,7 @@ function renderDedicatedSources() {
       </article>
     `;
     }).join("")
-    : pageEmpty("Nessuna raccolta disponibile.");
+    : pageEmpty("No collections available.");
   return `
     <div class="space-y-4">
       ${pageSection("Importazione", `
@@ -1919,14 +1919,14 @@ function renderDedicatedSecurity() {
     <div class="grid gap-4 lg:grid-cols-[.9fr_1.1fr]">
       ${pageSection("Password locale", `
         <div class="rounded-md border border-line bg-gray-50 p-3 text-sm text-gray-600">
-          Stato: ${configured ? "password locale attiva" : "nessuna password locale impostata"}.
+          Stato: ${configured ? "password locale attiva" : "no local password set"}.
         </div>
-        <input id="pageSecurityPassword" type="password" class="mt-3 h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Nuova password locale">
-        <button data-page-action="set-local-password" class="mt-3 h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Salva password</button>
+        <input id="pageSecurityPassword" type="password" class="mt-3 h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="New local password">
+        <button data-page-action="set-local-password" class="mt-3 h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Save password</button>
         ${configured ? `<button data-page-action="logout" class="ml-2 mt-3 h-9 rounded-md border border-line px-3 text-sm text-gray-700 hover:bg-gray-50" type="button">Esci</button>` : ""}
         <div class="mt-3 text-sm text-gray-500">${escapeHtml(state.pageSecurity.status || "")}</div>
       `)}
-      ${pageSection("Nota sicurezza", `
+      ${pageSection("Security Note", `
         <div class="space-y-3 text-sm leading-6 text-gray-600">
           <p>La password protegge l'accesso locale all'app. Non trasforma Judicex in un sistema multiutente o SaaS.</p>
           <p>Per dati reali usa anche cifratura disco, backup sicuri e variabili ambiente per le API key.</p>
@@ -1940,12 +1940,12 @@ function renderDedicatedBackup() {
   return `
     <div class="grid gap-4 lg:grid-cols-2">
       ${pageSection("Backup", `
-        <div class="text-sm leading-6 text-gray-600">Scarica un archivio ZIP con database SQLite e allegati locali.</div>
-        <a class="mt-3 inline-flex h-9 items-center rounded-md bg-ink px-3 text-sm font-medium text-white" href="/api/backup" target="_blank">Scarica backup</a>
+        <div class="text-sm leading-6 text-gray-600">Download a ZIP archive containing the SQLite database and local attachments.</div>
+        <a class="mt-3 inline-flex h-9 items-center rounded-md bg-ink px-3 text-sm font-medium text-white" href="/api/backup" target="_blank">Download backup</a>
       `)}
       ${pageSection("Ripristino", `
         <input id="pageRestoreFile" type="file" accept=".zip,application/zip" class="block w-full rounded-md border border-line p-2 text-sm">
-        <button data-page-action="restore-backup" class="mt-3 h-9 rounded-md border border-line px-3 text-sm text-gray-700 hover:bg-gray-50" type="button">Ripristina backup</button>
+        <button data-page-action="restore-backup" class="mt-3 h-9 rounded-md border border-line px-3 text-sm text-gray-700 hover:bg-gray-50" type="button">Restore backup</button>
         <div class="mt-3 text-sm text-gray-500">${escapeHtml(state.pageBackup.status || "")}</div>
       `)}
     </div>
@@ -1958,22 +1958,22 @@ function renderSettingsHub() {
     {
       key: "dashboard",
       title: "Dashboard",
-      text: "KPI, timeline, parti, importi e copertura del fascicolo.",
+      text: "KPIs, timeline, parties, amounts, and matter coverage.",
       action: "open-view",
       view: "dashboard",
-      badge: matter ? "Fascicolo attivo" : "Richiede fascicolo",
+      badge: matter ? "Active Matter" : "Requires Matter",
     },
     {
       key: "search",
-      title: "Cerca",
-      text: "Trova chat, messaggi, fascicoli, documenti e fatti estratti.",
+      title: "Search",
+      text: "Find chats, messages, matters, documents, and extracted facts.",
       action: "open-view",
       view: "search",
       badge: "Globale",
     },
     {
       key: "matters",
-      title: "Fascicoli",
+      title: "Matters",
       text: "Crea, seleziona e organizza le pratiche in memoria SQLite.",
       action: "open-view",
       view: "matters",
@@ -1981,11 +1981,11 @@ function renderSettingsHub() {
     },
     {
       key: "documents",
-      title: "Documenti",
-      text: "Upload, viewer, OCR, download, cartelle e revisioni.",
+      title: "Documents",
+      text: "Upload, viewer, OCR, download, folders, and revisions.",
       action: "open-view",
       view: "documents",
-      badge: matter ? "Workspace" : "Prima crea fascicolo",
+      badge: matter ? "Workspace" : "Create matter first",
     },
     {
       key: "workflows",
@@ -1997,7 +1997,7 @@ function renderSettingsHub() {
     },
     {
       key: "tables",
-      title: "Tabelle",
+      title: "Tables",
       text: "Review modificabile, filtri, ordinamento, viste ed export.",
       action: "open-view",
       view: "tables",
@@ -2005,8 +2005,8 @@ function renderSettingsHub() {
     },
     {
       key: "drafts",
-      title: "Atti",
-      text: "Generazione documenti, preview ed editor template.",
+      title: "Drafts",
+      text: "Document generation, preview, and template editor.",
       action: "open-view",
       view: "drafts",
       badge: `${state.draftTemplates.length || 0} template`,
@@ -2021,15 +2021,15 @@ function renderSettingsHub() {
     },
     {
       key: "provider",
-      title: "Provider AI",
-      text: "OpenAI, Claude, Ollama, endpoint compatibili o nessun LLM.",
+      title: "AI Providers",
+      text: "Groq, OpenAI, Claude, Ollama, compatible endpoints, or no LLM.",
       action: "open-view",
       view: "provider",
       badge: state.llmSettings?.provider_label || "AI",
     },
     {
       key: "memory",
-      title: "Memoria assistente",
+      title: "Assistant Memory",
       text: "Preferenze, istruzioni, decisioni e lezioni operative.",
       action: "open-view",
       view: "memory",
@@ -2037,7 +2037,7 @@ function renderSettingsHub() {
     },
     {
       key: "sources",
-      title: "Fonti normative",
+      title: "Legal Sources",
       text: "Importa raccolte ufficiali nel database locale.",
       action: "open-view",
       view: "sources",
@@ -2046,18 +2046,18 @@ function renderSettingsHub() {
     {
       key: "backup",
       title: "Backup",
-      text: "Esporta e ripristina SQLite e allegati locali.",
+      text: "Export and restore SQLite database and local attachments.",
       action: "open-view",
       view: "backup",
       badge: "Locale",
     },
     {
       key: "security",
-      title: "Sicurezza",
+      title: "Security",
       text: "Password locale per proteggere l'accesso alla memoria.",
       action: "open-view",
       view: "security",
-      badge: state.authStatus?.configured ? "Attiva" : "Da impostare",
+      badge: state.authStatus?.configured ? "Draftsva" : "Da impostare",
     },
   ];
   return `
@@ -2117,14 +2117,14 @@ function renderDedicatedProviderSettings() {
   const modelOptions = providerModelOptions(provider, settings);
   const modelSelectOptions = modelOptions.length
     ? modelOptions.map((item) => `<option value="${escapeHtml(item)}" ${item === modelValue ? "selected" : ""}>${escapeHtml(item)}</option>`).join("")
-    : `<option value="">Nessun modello disponibile</option>`;
+    : `<option value="">No models available</option>`;
   const modelStatus = state.llmModelOptionsStatus[provider] || "";
   const keyText = selectedProvider.api_key_env
     ? `${selectedProvider.api_key_env}: ${settings.api_key_present ? "configurata" : "mancante"}`
-    : provider === "none" ? "Nessuna chiave richiesta." : "Nessuna chiave richiesta.";
+    : provider === "none" ? "No API key required." : "No API key required.";
   return `
     <div class="space-y-4">
-      ${pageSection("Provider AI", `
+      ${pageSection("AI Providers", `
         <label class="text-xs font-semibold uppercase tracking-wide text-gray-500" for="pageSettingsProvider">Provider</label>
         <select id="pageSettingsProvider" class="mt-1 h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink">${options}</select>
         <label class="mt-4 block text-xs font-semibold uppercase tracking-wide text-gray-500" for="pageSettingsModel">Modello</label>
@@ -2142,11 +2142,11 @@ function renderDedicatedProviderSettings() {
         </div>
         <div id="pageSettingsStatus" class="mt-3 text-sm text-gray-500">${escapeHtml(state.pageSettings.status || "")}</div>
       `)}
-      ${pageSection("Note OSS e sicurezza", `
+      ${pageSection("OSS & Security Notes", `
         <div class="space-y-3 text-sm leading-6 text-gray-600">
           <p>Le API key non vengono salvate nella UI. Si configurano nel file <code class="rounded bg-gray-100 px-1 py-0.5 text-xs">.env</code> o come variabili ambiente.</p>
           <p>Provider supportati: Ollama locale, OpenAI, Claude/Anthropic, endpoint OpenAI compatibile e modalità senza LLM.</p>
-          <p>La modalità senza LLM mantiene disponibili fascicoli, upload, tabelle, documenti, workflow deterministici e tool locali; le risposte generative restano disattivate.</p>
+          <p>No-LLM mode keeps matters, uploads, tables, documents, deterministic workflows, and local tools available; generative responses remain disabled.</p>
         </div>
       `)}
     </div>
@@ -2176,18 +2176,18 @@ function renderDedicatedMatters() {
         </div>
       </article>
     `).join("")
-    : `<div class="rounded-md border border-dashed border-line bg-white px-4 py-10 text-center text-sm text-gray-500">Nessun fascicolo. Crea il primo dalla sezione sopra.</div>`;
+    : `<div class="rounded-md border border-dashed border-line bg-white px-4 py-10 text-center text-sm text-gray-500">No matters. Crea il primo dalla sezione sopra.</div>`;
   return `
     <div class="space-y-4">
-      ${pageSection("Nuovo fascicolo", `
-        <input id="pageMatterTitle" class="h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Titolo fascicolo">
+      ${pageSection("New matter", `
+        <input id="pageMatterTitle" class="h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Matter title">
         <input id="pageMatterClient" class="mt-3 h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Cliente">
         <input id="pageMatterArea" class="mt-3 h-9 w-full rounded-md border border-line px-3 text-sm outline-none focus:border-ink" placeholder="Area" value="${escapeHtml(els.areaInput.value || state.defaults.area || "civile")}">
         <textarea id="pageMatterSummary" rows="5" class="mt-3 w-full resize-y rounded-md border border-line p-3 text-sm outline-none focus:border-ink" placeholder="Sintesi"></textarea>
-        <button data-page-action="create-matter" class="mt-3 h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Crea fascicolo</button>
+        <button data-page-action="create-matter" class="mt-3 h-9 rounded-md bg-ink px-3 text-sm font-medium text-white" type="button">Create matter</button>
         <div id="pageMatterStatus" class="mt-3 text-sm text-gray-500"></div>
       `)}
-      ${pageSection("Fascicoli", `<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">${list}</div>`)}
+      ${pageSection("Matters", `<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">${list}</div>`)}
     </div>
   `;
 }
@@ -2195,7 +2195,7 @@ function renderDedicatedMatters() {
 function renderVisualizationMarkup(payload, gridClass = "grid-cols-3") {
   const kpis = payload.kpis || {};
   const kpiItems = [
-    ["Documenti", kpis.documents || 0],
+    ["Documents", kpis.documents || 0],
     ["Fatti", kpis.facts || 0],
     ["Cartelle", kpis.folders || 0],
     ["Parti", kpis.parties || 0],
@@ -2211,8 +2211,8 @@ function renderVisualizationMarkup(payload, gridClass = "grid-cols-3") {
         </div>
       `).join("")}
     </div>
-    ${renderBarList("Documenti per tipo", payload.documents_by_kind || [])}
-    ${renderBarList("Fatti per tipo", payload.facts_by_type || [])}
+    ${renderBarList("Documents per tipo", payload.documents_by_kind || [])}
+    ${renderBarList("Facts by type", payload.facts_by_type || [])}
     ${renderTimeline(payload.timeline || [])}
   `;
 }
@@ -2226,7 +2226,7 @@ function renderReviewList(reviews) {
         <div class="mt-0.5 text-gray-500">${escapeHtml(review.row_count || 0)} righe</div>
       </button>
     `).join("")
-    : `<div class="rounded-md border border-line bg-gray-50 px-3 py-3 text-gray-500">Nessuna tabella salvata.</div>`;
+    : `<div class="rounded-md border border-line bg-gray-50 px-3 py-3 text-gray-500">No saved tables.</div>`;
   document.querySelectorAll(".open-review").forEach((button) => {
     button.addEventListener("click", async () => {
       const payload = await api(`/api/tabular-reviews/${encodeURIComponent(button.dataset.reviewId)}`);
@@ -2254,7 +2254,7 @@ function renderReviewTable(review) {
       <tbody>
         ${rows.length ? rows.map(({row, originalIndex}) => `
           <tr>${columns.map((column) => `<td class="min-w-[140px] max-w-[260px] align-top border border-line px-2 py-1"><div contenteditable="true" data-row-index="${originalIndex}" data-key="${escapeHtml(column.key)}" class="editable-cell min-h-5 outline-none">${escapeHtml(row[column.key] || "")}</div></td>`).join("")}</tr>
-        `).join("") : `<tr><td class="border border-line px-2 py-2 text-gray-500" colspan="${columns.length || 1}">Nessuna riga.</td></tr>`}
+        `).join("") : `<tr><td class="border border-line px-2 py-2 text-gray-500" colspan="${columns.length || 1}">No rows.</td></tr>`}
       </tbody>
     </table>
   `;
@@ -2374,7 +2374,7 @@ function fillWorkflowBuilder(workflow, versions = []) {
           <div class="text-gray-500">${escapeHtml(String(version.created_at || "").slice(0, 19))}</div>
         </div>
       `).join("")
-      : `<div class="rounded-md border border-line bg-gray-50 px-2 py-2 text-gray-500">Nessuna versione workflow.</div>`;
+      : `<div class="rounded-md border border-line bg-gray-50 px-2 py-2 text-gray-500">No workflow versions.</div>`;
   }
 }
 
@@ -2412,9 +2412,9 @@ function friendlyThinkingTitle(title) {
   const labels = {
     "Pianifico lavoro": "Capisco cosa serve",
     "memoria agente": "Controllo la memoria assistente",
-    "ricerca legale": "Cerco nelle fonti disponibili",
+    "ricerca legale": "Searching available sources",
     "composizione risposta": "Preparo la risposta",
-    "fascicolo": "Leggo il fascicolo",
+    "fascicolo": "Reading matter file",
   };
   return labels[raw] || raw || "Judicex sta lavorando";
 }
@@ -2423,8 +2423,8 @@ function friendlyThinkingDetail(detail) {
   const text = String(detail || "").trim();
   if (!text) return "Sto preparando una risposta ordinata.";
   return text
-    .replace("Uso il motore legale con memoria normativa e controllo citazioni.", "Verifico le fonti disponibili.")
-    .replace("Compongo una risposta pratica usando i risultati dei tool disponibili.", "Organizzo domande, rischi, strategia e bozza.")
+    .replace("Uso il motore legale con memoria normativa e controllo citazioni.", "Verifying available sources.")
+    .replace("Compongo una risposta pratica usando i risultati dei tool disponibili.", "Organizing questions, risks, strategy, and draft.")
     .replace("Cerco preferenze, decisioni e lezioni operative già salvate.", "Controllo se ci sono preferenze o note utili.");
 }
 
@@ -2465,7 +2465,7 @@ async function streamAnswer(payload, placeholder) {
     }
   }
   if (streamError) {
-    throw new Error(streamError.message || "Errore streaming.");
+    throw new Error(streamError.message || "Streaming error.");
   }
   if (!result) {
     throw new Error("Risposta streaming non ricevuta.");
@@ -2592,7 +2592,7 @@ async function runPageSearch() {
     state.pageSearch.results = payload.results || [];
     state.pageSearch.status = state.pageSearch.results.length
       ? `${state.pageSearch.results.length} risultati trovati.`
-      : "Nessun risultato trovato.";
+      : "No results found.";
   } catch (error) {
     state.pageSearch.results = [];
     state.pageSearch.status = error.message;
@@ -2626,13 +2626,13 @@ async function createPageFolder() {
   const status = document.getElementById("pageDocumentStatus");
   const name = input?.value.trim() || "";
   if (!name) return;
-  if (status) status.textContent = "Creo cartella...";
+  if (status) status.textContent = "Creating folder...";
   await api(`/api/matters/${encodeURIComponent(state.activeMatterId)}/folders`, {
     method: "POST",
     body: JSON.stringify({name}),
   });
   if (input) input.value = "";
-  if (status) status.textContent = "Cartella creata.";
+  if (status) status.textContent = "Folder created.";
   await refreshMatterContext();
 }
 
@@ -2655,7 +2655,7 @@ async function runPageOcr() {
 
 async function runPageWorkflow() {
   await ensureActiveMatter();
-  const thesis = state.pageWorkflow.thesis || document.getElementById("pageWorkflowThesis")?.value.trim() || "analisi generale del fascicolo";
+  const thesis = state.pageWorkflow.thesis || document.getElementById("pageWorkflowThesis")?.value.trim() || "general matter analysis";
   state.pageWorkflow.thesis = thesis;
   state.pageWorkflow.selectedId = document.getElementById("pageWorkflowSelect")?.value || state.pageWorkflow.selectedId;
   state.pageWorkflow.output = "Esecuzione workflow...";
@@ -2769,7 +2769,7 @@ async function deletePageWorkflow() {
 async function createPageReview() {
   await ensureActiveMatter();
   state.pageReview.query = document.getElementById("pageTabularQuery")?.value.trim() || state.pageReview.query || "";
-  state.pageReview.status = "Creo tabella...";
+  state.pageReview.status = "Creating table...";
   renderDedicatedView("tables");
   try {
     const payload = await api(`/api/matters/${encodeURIComponent(state.activeMatterId)}/tabular-reviews`, {
@@ -2777,7 +2777,7 @@ async function createPageReview() {
       body: JSON.stringify({query: state.pageReview.query}),
     });
     state.activeReview = payload.review;
-    state.pageReview.status = `Tabella creata: ${payload.review.title}`;
+    state.pageReview.status = `Table created: ${payload.review.title}`;
     await loadTabularReviews();
   } catch (error) {
     state.pageReview.status = error.message;
@@ -2818,9 +2818,9 @@ async function assistantPageDraft() {
     renderDedicatedView("drafts");
     return;
   }
-  state.pageDraft.status = "Preparo l'atto...";
+  state.pageDraft.status = "Preparing draft...";
   state.pageDraft.preview = "";
-  state.pageDraft.previewTitle = "Anteprima atto";
+  state.pageDraft.previewTitle = "Draft preview";
   state.pageDraft.previewMeta = "Generazione in corso...";
   renderDedicatedView("drafts");
   try {
@@ -2838,23 +2838,23 @@ async function assistantPageDraft() {
       state.pageDraft.params = humanFieldsFromParams(draft.suggested_params || {}, draft.missing_params || []);
       state.pageDraft.status = `Mi servono questi dati: ${(draft.missing_params || []).join(", ")}`;
       state.pageDraft.preview = `${draft.title || "Atto"}\n\n${draft.reason || "Completa i dati mancanti nella sezione Compilazione manuale."}`;
-      state.pageDraft.previewTitle = draft.title || "Anteprima atto";
-      state.pageDraft.previewMeta = "Servono altri dati per completare la bozza";
+      state.pageDraft.previewTitle = draft.title || "Draft preview";
+      state.pageDraft.previewMeta = "Additional data required to complete draft";
       renderDedicatedView("drafts");
       return;
     }
     if (payload.document) {
-      state.pageDraft.status = `Atto salvato: ${payload.document.title}`;
+      state.pageDraft.status = `Draft saved: ${payload.document.title}`;
       state.pageDraft.preview = draft.rendered || "";
       state.pageDraft.previewTitle = payload.document.title || draft.title || "Atto generato";
-      state.pageDraft.previewMeta = `Salvato nel fascicolo · ${new Date().toLocaleString("it-IT")}`;
+      state.pageDraft.previewMeta = `Saved to matter · ${new Date().toLocaleString("it-IT")}`;
       await refreshMatterContext();
       await openMatterDocument(payload.document.id, {openPanel: false});
     } else {
-      state.pageDraft.status = draft.reason || "Atto non generato.";
+      state.pageDraft.status = draft.reason || "Draft not generated.";
       state.pageDraft.preview = draft.rendered || "";
-      state.pageDraft.previewTitle = draft.title || "Anteprima atto";
-      state.pageDraft.previewMeta = draft.reason || "Bozza non salvata";
+      state.pageDraft.previewTitle = draft.title || "Draft preview";
+      state.pageDraft.previewMeta = draft.reason || "Draft not saved";
     }
   } catch (error) {
     state.pageDraft.status = error.message;
@@ -2884,11 +2884,11 @@ async function previewPageDraft() {
       body: JSON.stringify({params: parseJsonObject(state.pageDraft.params, {})}),
     });
     state.pageDraft.preview = payload.rendered || "";
-    state.pageDraft.previewTitle = payload.title || state.pageDraft.previewTitle || "Anteprima atto";
-    state.pageDraft.previewMeta = `Anteprima manuale · ${new Date().toLocaleString("it-IT")}`;
-    state.pageDraft.status = "Anteprima aggiornata.";
+    state.pageDraft.previewTitle = payload.title || state.pageDraft.previewTitle || "Draft preview";
+    state.pageDraft.previewMeta = `Manual preview · ${new Date().toLocaleString("it-IT")}`;
+    state.pageDraft.status = "Preview updated.";
   } catch (error) {
-    state.pageDraft.status = "Anteprima disponibile per i template creati qui. Per quelli predefiniti usa Genera e salva.";
+    state.pageDraft.status = "Preview available for custom templates. For built-in templates, use Generate & save.";
   }
   renderDedicatedView("drafts");
 }
@@ -2910,7 +2910,7 @@ async function copyDraftPreview() {
       document.execCommand("copy");
       helper.remove();
     }
-    state.pageDraft.status = "Anteprima copiata negli appunti.";
+    state.pageDraft.status = "Preview copied to clipboard.";
   } catch (error) {
     state.pageDraft.status = `Copia non riuscita: ${error.message}`;
   }
@@ -2922,7 +2922,7 @@ async function createPageDraft() {
   state.pageDraft.selectedId = document.getElementById("pageDraftTemplateSelect")?.value || state.pageDraft.selectedId;
   state.pageDraft.asOfDate = document.getElementById("pageDraftAsOfDate")?.value.trim() || state.pageDraft.asOfDate;
   state.pageDraft.params = document.getElementById("pageDraftParams")?.value || state.pageDraft.params || "";
-  state.pageDraft.status = "Genero atto...";
+  state.pageDraft.status = "Generating draft...";
   renderDedicatedView("drafts");
   try {
     const payload = await api(`/api/matters/${encodeURIComponent(state.activeMatterId)}/drafts`, {
@@ -2934,11 +2934,11 @@ async function createPageDraft() {
       }),
     });
     if (payload.document) {
-      state.pageDraft.status = `Atto salvato: ${payload.document.title}`;
+      state.pageDraft.status = `Draft saved: ${payload.document.title}`;
       await refreshMatterContext();
       await openMatterDocument(payload.document.id, {openPanel: false});
     } else {
-      state.pageDraft.status = payload.draft?.reason || "Atto non generato.";
+      state.pageDraft.status = payload.draft?.reason || "Draft not generated.";
     }
   } catch (error) {
     state.pageDraft.status = error.message;
@@ -3097,7 +3097,7 @@ function readPageSettings() {
 async function savePageSettings() {
   const next = readPageSettings();
   state.llmSettings = {...(state.llmSettings || {}), ...next};
-  state.pageSettings.status = "Salvo impostazioni...";
+  state.pageSettings.status = "Saving settings...";
   renderDedicatedView(state.currentView || "provider");
   try {
     const payload = await api("/api/settings/llm", {
@@ -3108,7 +3108,7 @@ async function savePageSettings() {
     state.defaults.model = payload.settings.model;
     state.defaults.host = payload.settings.base_url;
     state.defaults.provider = payload.settings.provider;
-    state.pageSettings.status = `Impostazioni salvate: ${payload.settings.provider_label} / ${payload.settings.model || "nessun modello"}`;
+    state.pageSettings.status = `Settings saved: ${payload.settings.provider_label} / ${payload.settings.model || "no model"}`;
   } catch (error) {
     state.pageSettings.status = error.message;
   }
@@ -3283,7 +3283,7 @@ async function createPageMatter() {
 async function deletePageMatter(matterId) {
   const matter = state.matters.find((item) => item.id === matterId);
   if (!matter) return;
-  const confirmed = window.confirm(`Eliminare il fascicolo "${matter.title}"?\n\nDocumenti, dati estratti e chat collegate al fascicolo verranno rimossi dalla memoria locale.`);
+  const confirmed = window.confirm(`Delete matter "${matter.title}"?\n\nDocuments, extracted data, and linked chats will be permanently removed from local memory.`);
   if (!confirmed) return;
   const payload = await api(`/api/matters/${encodeURIComponent(matterId)}`, {method: "DELETE"});
   state.matters = payload.matters || [];
@@ -3329,7 +3329,7 @@ if (els.pageBackButton) {
 
 if (els.newChatBtn) {
   els.newChatBtn.addEventListener("click", async () => {
-    await createChatSession({title: "Nuova chat", select: true});
+    await createChatSession({title: "New chat", select: true});
     navigateView("chat");
     if (els.questionInput) {
       els.questionInput.value = "";
@@ -3601,7 +3601,7 @@ if (els.deleteWorkflowButton) {
 if (els.createReviewButton) {
   els.createReviewButton.addEventListener("click", async () => {
     await ensureActiveMatter();
-    els.reviewPanel.innerHTML = `<div class="rounded-md border border-line bg-gray-50 px-3 py-3 text-gray-500">Creo tabella...</div>`;
+    els.reviewPanel.innerHTML = `<div class="rounded-md border border-line bg-gray-50 px-3 py-3 text-gray-500">Creating table...</div>`;
     try {
       const payload = await api(`/api/matters/${encodeURIComponent(state.activeMatterId)}/tabular-reviews`, {
         method: "POST",
@@ -3649,7 +3649,7 @@ if (els.saveReviewViewButton) {
 if (els.createDraftButton) {
   els.createDraftButton.addEventListener("click", async () => {
     await ensureActiveMatter();
-    els.draftStatus.textContent = "Genero atto...";
+    els.draftStatus.textContent = "Generating draft...";
     try {
       const payload = await api(`/api/matters/${encodeURIComponent(state.activeMatterId)}/drafts`, {
         method: "POST",
@@ -3660,11 +3660,11 @@ if (els.createDraftButton) {
         }),
       });
       if (payload.document) {
-        els.draftStatus.textContent = `Atto salvato: ${payload.document.title}`;
+        els.draftStatus.textContent = `Draft saved: ${payload.document.title}`;
         await refreshMatterContext();
         await openMatterDocument(payload.document.id);
       } else {
-        els.draftStatus.textContent = payload.draft?.reason || "Atto non generato.";
+        els.draftStatus.textContent = payload.draft?.reason || "Draft not generated.";
         renderAudit(payload.draft || payload);
       }
     } catch (error) {
@@ -3681,9 +3681,9 @@ if (els.previewDraftButton) {
         body: JSON.stringify({params: parseJsonObject(els.draftParamsInput.value, {})}),
       });
       els.draftPreviewPanel.textContent = payload.rendered || "";
-      els.draftStatus.textContent = "Anteprima aggiornata.";
+      els.draftStatus.textContent = "Preview updated.";
     } catch (error) {
-      els.draftStatus.textContent = "Anteprima disponibile per i template creati qui. Per quelli predefiniti usa Genera e salva.";
+      els.draftStatus.textContent = "Preview available for custom templates. For built-in templates, use Generate & save.";
     }
   });
 }
@@ -3914,8 +3914,8 @@ function removePlaceholder(node) {
 
 els.analyzeButton.addEventListener("click", async () => {
   await ensureActiveMatter();
-  const thesis = els.workflowThesisInput?.value.trim() || els.thesisInput.value.trim() || els.questionInput.value.trim() || "analisi generale del fascicolo";
-  appendMessage("user", thesis, "analisi fascicolo");
+  const thesis = els.workflowThesisInput?.value.trim() || els.thesisInput.value.trim() || els.questionInput.value.trim() || "general matter analysis";
+  appendMessage("user", thesis, "matter analysis");
   try {
     const payload = await api("/api/workflows/run", {
       method: "POST",
@@ -3945,7 +3945,7 @@ els.analyzeButton.addEventListener("click", async () => {
 
 function analysisToText(analysis) {
   const lines = [
-    `Analisi fascicolo: ${analysis.profile?.label || "profilo"}.`,
+    `Matter analysis: ${analysis.profile?.label || "profile"}.`,
     `Stato: ${analysis.status} (${analysis.readiness_score}%).`,
   ];
   if (analysis.present_requirements?.length) {
@@ -4032,10 +4032,10 @@ async function uploadFiles(files, options = {}) {
 async function ensureActiveMatter() {
   if (state.activeMatterId) return state.activeMatterId;
   const payload = {
-    title: "Documenti recenti",
+    title: "Documents recenti",
     client_name: "",
     area: els.areaInput.value.trim() || state.defaults.area || "civile",
-    summary: "Fascicolo automatico per upload e prime analisi."
+    summary: "Automatic matter for uploads and preliminary analysis."
   };
   const result = await api("/api/matters", {method: "POST", body: JSON.stringify(payload)});
   state.matters = result.matters || [];

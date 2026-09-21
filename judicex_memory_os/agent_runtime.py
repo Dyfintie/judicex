@@ -236,29 +236,62 @@ class JudicexAgentRuntime:
     def _planner_prompt() -> str:
         return textwrap.dedent(
             """
-            Sei il planner del runtime agentico Judicex. Non devi rispondere
-            all'utente: devi scegliere quali tool interni usare.
+            You are the planner for the Judicex agentic runtime.
+            Your responsibility is not to answer the user directly,
+            but to determine which internal tools should be executed
+            to accomplish the user's objective.
 
-            Tool disponibili:
-            - agent.memory_search: recupera memoria agente, preferenze e lezioni operative già salvate.
-            - legal.answer_grounded: usa il motore legale con memoria normativa e citation gate.
-            - matter.inspect: legge il fascicolo attivo e i suoi fatti/documenti.
-            - answer.compose_operational: compone domande, checklist, rischi, strategia e bozze usando i risultati degli altri tool.
-            - respond.direct: conversazione semplice sul sistema o small talk.
+            Available tools:
+            - agent.memory_search: Retrieves previously stored agent memories,
+            user preferences, decisions, and operational lessons.
 
-            Regole:
-            - Se active_matter_id è vuoto, non usare matter_work come intent.
-            - Il motore legale è un tool, non il percorso obbligatorio.
-            - La memoria agente non è memoria normativa: non usarla come fonte di diritto.
-            - Per richieste miste di avvocato pratico usa legal.answer_grounded e answer.compose_operational.
-            - Per bozze, checklist, rischi e strategia usa answer.compose_operational.
+            - legal.answer_grounded: Uses the grounded legal reasoning engine,
+            including statutory knowledge retrieval, source verification,
+            and citation validation.
 
-            Rispondi solo JSON:
+            - matter.inspect: Examines the active legal matter, including
+            associated facts, documents, and available evidence.
+
+            - answer.compose_operational: Produces practical legal outputs,
+            including clarification questions, checklists, risk assessments,
+            legal strategies, and document drafts using the results
+            obtained from other tools.
+
+            - respond.direct: Handles simple conversations, system-related
+            questions, greetings, and general small talk.
+
+            Planning rules:
+            1. If active_matter_id is empty, do not select
+            "matter_work" as the intent.
+
+            2. The grounded legal reasoning engine is an available tool,
+            not a mandatory execution path.
+
+            3. Agent memory is different from statutory legal knowledge.
+            Never treat agent memories as authoritative sources of law.
+
+            4. For requests requiring practical legal assistance,
+            combine legal.answer_grounded with
+            answer.compose_operational when appropriate.
+
+            5. For document drafts, checklists, risk assessments,
+            and legal strategies, use answer.compose_operational.
+
+            6. Select tools according to the user's objective and
+            the information required to complete the task.
+
+            7. Do not invent tool names or select unavailable tools.
+
+            Return only valid JSON using the following structure:
+
             {
-              "intent": "chat | legal_work | matter_work",
-              "goal": "obiettivo pratico",
-              "actions": ["legal.answer_grounded", "answer.compose_operational"],
-              "reason": "perché"
+            "intent": "chat | legal_work | matter_work",
+            "goal": "Practical objective to accomplish",
+            "actions": [
+                "legal.answer_grounded",
+                "answer.compose_operational"
+            ],
+            "reason": "Explanation of why these tools were selected"
             }
             """
         ).strip()
@@ -407,7 +440,7 @@ class JudicexAgentRuntime:
                 messages=[
                     {
                         "role": "system",
-                        "content": "Sei Judicex. Rispondi in italiano, breve e pratico, senza percorso legale.",
+                        "content": "Sei Judicex. Respond in English, concise and practical, without legal research pipeline.",
                     },
                     {
                         "role": "user",
@@ -422,9 +455,9 @@ class JudicexAgentRuntime:
             )
             answer = _clean(raw)
         except Exception:
-            answer = "Dimmi pure cosa vuoi fare in Judicex."
-        self._emit("tool_direct_chat", "Tool: risposta diretta", "completed", "Risposta pronta.")
-        return answer or "Dimmi pure cosa vuoi fare in Judicex."
+            answer = "How can I assist you with Judicex today?"
+        self._emit("tool_direct_chat", "Tool: direct chat", "completed", "Response ready.")
+        return answer or "How can I assist you with Judicex today?"
 
     # ------------------------------------------------------------------
     # Composition
@@ -444,34 +477,34 @@ class JudicexAgentRuntime:
     def _composer_prompt() -> str:
         return textwrap.dedent(
             """
-            Sei Judicex, agente legale operativo. Devi produrre la risposta finale
-            per un avvocato usando i tool già eseguiti.
+            You are Judicex, an operational legal AI agent. You must produce the final response
+            for a legal professional using already executed tools. Respond in clear English.
 
-            Regole:
-            - Non inventare articoli, termini o citazioni.
-            - Cita articoli, termini processuali o prescrizioni solo se legal_result
-              li supporta esplicitamente con fonti/citazioni. In caso contrario usa
-              formule prudenti: "da verificare sulle fonti e sul fascicolo".
-            - Se legal_result contiene fonti/citazioni utili, puoi riusarle.
-            - agent_memory contiene preferenze, decisioni o lezioni operative:
-              applicale come contesto di lavoro, non citarle come diritto.
-            - Se legal_result è abstain o limitato, non fermarti: produci comunque
-              domande, checklist, rischi pratici, strategia e bozze prudenti.
-            - Le bozze possono usare segnaposto per dati mancanti.
-            - Stile: professionale, chiaro, senza emoji, senza tecnicismi inutili,
-              senza sezioni di debug.
+            Rules:
+            - Language: Respond strictly in English.
+            - Do not invent articles, deadlines, or citations.
+            - Cite articles, statutory terms, or limitation periods only if legal_result
+              explicitly supports them with sources/citations. Otherwise use cautious phrasing:
+              "to be verified against primary sources and the matter file".
+            - If legal_result contains relevant sources/citations, you may reuse them.
+            - agent_memory contains preferences, decisions, or operational lessons:
+              apply them as working context, do not cite them as statutory law.
+            - If legal_result is abstain or limited, do not stop: still produce
+              practical questions, checklists, procedural risks, strategy, and careful drafts.
+            - Drafts may use placeholders for missing facts (e.g., [Claimant], [Amount]).
+            - Style: professional, clear, no emojis, no unnecessary jargon, no debug sections.
 
-            Rispondi solo JSON:
+            Respond only in valid JSON:
             {
               "status": "operational | limited | grounded",
-              "intro": "frase breve",
+              "intro": "concise opening sentence in English",
               "sections": [
-                {"type": "questions", "title": "Dati da chiarire", "items": ["..."]},
-                {"type": "explanation", "title": "Differenza pratica", "items": ["..."]},
-                {"type": "checklist", "title": "Checklist documentale", "items": ["..."]},
-                {"type": "risks", "title": "Rischi processuali", "items": ["..."]},
-                {"type": "strategy", "title": "Strategia operativa", "items": ["..."]},
-                {"type": "draft", "title": "Bozza diffida", "content": "..."}
+                {"type": "questions", "title": "Points to Clarify", "items": ["..."]},
+                {"type": "explanation", "title": "Practical Distinction", "items": ["..."]},
+                {"type": "checklist", "title": "Documentary Checklist", "items": ["..."]},
+                {"type": "risks", "title": "Procedural Risks", "items": ["..."]},
+                {"type": "strategy", "title": "Operational Strategy", "items": ["..."]},
+                {"type": "draft", "title": "Legal Notice Draft", "content": "..."}
               ],
               "missing_information": ["..."],
               "follow_up_questions": ["..."]
@@ -520,113 +553,223 @@ class JudicexAgentRuntime:
         outcomes: dict[str, ToolOutcome] | None = None,
     ) -> dict[str, Any]:
         text = question.lower()
+        is_italian = any(
+            marker in text
+            for marker in (
+                "domande", "dati mancanti", "fatture", "recuperare", "recupero", "pagate", "mancanti",
+                "diffida", "chiarire", "decreto ingiuntivo", "messa in mora", "spiegami",
+                "differenza", "processuali", "consiglieresti", "recupero credito", "recupero crediti",
+                "redigi", "bozza", "prepara", "strategia operativa", "fascicolo", "crediti"
+            )
+        )
         sections: list[dict[str, Any]] = []
-        if any(marker in text for marker in ("domande", "dati mancanti", "procedere", "decreto ingiuntivo", "fatture")):
-            sections.append(
-                {
-                    "type": "questions",
-                    "title": "Dati da chiarire",
-                    "items": [
-                        "Numero, data di emissione, scadenza e importo di ciascuna fattura.",
-                        "Esistono contratto, ordine, conferma d'ordine o condizioni generali firmate?",
-                        "La merce è stata consegnata o il servizio è stato accettato senza contestazioni?",
-                        "Il debitore ha pagato qualcosa, contestato importi o chiesto dilazioni?",
-                        "Hai PEC, sede legale aggiornata e visura camerale del debitore?",
-                    ],
-                }
-            )
-        if any(marker in text for marker in ("spiegami", "differenza", "diffida", "messa in mora", "decreto ingiuntivo")):
-            sections.append(
-                {
-                    "type": "explanation",
-                    "title": "Differenza pratica",
-                    "items": [
-                        "La diffida è una richiesta formale di pagamento: serve a mettere pressione, fissare un termine e preparare il fascicolo.",
-                        "La messa in mora è la comunicazione con cui si contesta l'inadempimento e si chiede l'adempimento; di solito si integra nella diffida.",
-                        "Il ricorso per decreto ingiuntivo è il passaggio giudiziale: ha senso quando il credito è documentato e il debitore non paga dopo il sollecito.",
-                    ],
-                }
-            )
-        if any(marker in text for marker in ("checklist", "document", "fatture", "decreto ingiuntivo")):
-            sections.append(
-                {
-                    "type": "checklist",
-                    "title": "Checklist documentale",
-                    "items": [
-                        "Tre fatture complete con prova di invio o registrazione.",
-                        "Contratto, ordine, preventivo accettato o scambio email che giustifica le prestazioni.",
-                        "Prova di consegna, rapportini, SAL, DDT, accettazione del servizio o assenza di contestazioni.",
-                        "Estratto conto cliente, solleciti, eventuali promesse di pagamento e PEC già inviate.",
-                        "Visura del debitore, PEC corretta, sede legale e dati del creditore.",
-                    ],
-                }
-            )
-        if any(marker in text for marker in ("rischi", "processuali", "decreto ingiuntivo", "recuperare")):
-            sections.append(
-                {
-                    "type": "risks",
-                    "title": "Rischi processuali",
-                    "items": [
-                        "Opposizione del debitore se contesta prestazioni, importi o qualità del servizio.",
-                        "Prova documentale insufficiente se oltre alle fatture mancano ordine, consegna o accettazione.",
-                        "Tempi e costi aggiuntivi se il debitore è incapiente o irreperibile.",
-                        "Errore su PEC, sede o dati societari che rallenta notifiche e recupero.",
-                    ],
-                }
-            )
-        if any(marker in text for marker in ("strategia", "consiglieresti", "recupero credito", "b2b", "decreto ingiuntivo")):
-            sections.append(
-                {
-                    "type": "strategy",
-                    "title": "Strategia operativa",
-                    "items": [
-                        "Prima verifica se il credito è liquido, scaduto, documentato e non seriamente contestato.",
-                        "Invia una diffida via PEC con termine breve e allega l'elenco delle fatture.",
-                        "Nel frattempo prepara il fascicolo per il ricorso: fatture, contratto/ordine, prove di esecuzione e visura.",
-                        "Se non paga o non propone una trattativa credibile, passa al decreto ingiuntivo con fascicolo già ordinato.",
-                    ],
-                }
-            )
-        if any(marker in text for marker in ("redigi", "bozza", "diffida")):
-            sections.append(
-                {
-                    "type": "draft",
-                    "title": "Bozza diffida",
-                    "content": (
-                        "Oggetto: diffida di pagamento per fatture scadute\n\n"
-                        "Spett.le [Società debitrice],\n\n"
-                        "nell'interesse di [Società creditrice], Vi invitiamo a provvedere al pagamento "
-                        "dell'importo complessivo di euro 8.500,00, relativo a tre fatture scadute da circa 90 giorni: "
-                        "[numero/data/importo fattura 1], [numero/data/importo fattura 2], [numero/data/importo fattura 3].\n\n"
-                        "Il pagamento dovrà essere effettuato entro [termine] giorni dal ricevimento della presente "
-                        "sul seguente IBAN: [IBAN]. In mancanza, riceveremo istruzioni per procedere senza ulteriore avviso "
-                        "al recupero coattivo del credito, anche mediante ricorso per decreto ingiuntivo, con aggravio di spese, "
-                        "interessi e competenze.\n\n"
-                        "Restano espressamente riservati tutti i diritti, le azioni e le ragioni della società creditrice.\n\n"
-                        "Distinti saluti\n[Avvocato / Studio]"
-                    ),
-                }
-            )
-        if not sections:
-            sections.append(
-                {
-                    "type": "next_steps",
-                    "title": "Prossimi passi",
-                    "items": [
-                        "Carica o indica i documenti disponibili.",
-                        "Dimmi l'obiettivo pratico: parere, checklist, bozza atto o analisi fascicolo.",
-                    ],
-                }
-            )
+        if is_italian:
+            if any(marker in text for marker in ("domande", "dati mancanti", "procedere", "decreto ingiuntivo", "fatture")):
+                sections.append(
+                    {
+                        "type": "questions",
+                        "title": "Dati da chiarire",
+                        "items": [
+                            "Numero, data di emissione, scadenza e importo di ciascuna fattura.",
+                            "Esistono contratto, ordine, conferma d'ordine o condizioni generali firmate?",
+                            "La merce è stata consegnata o il servizio è stato accettato senza contestazioni?",
+                            "Il debitore ha pagato qualcosa, contestato importi o chiesto dilazioni?",
+                            "Hai PEC, sede legale aggiornata e visura camerale del debitore?",
+                        ],
+                    }
+                )
+            if any(marker in text for marker in ("spiegami", "differenza", "diffida", "messa in mora", "decreto ingiuntivo")):
+                sections.append(
+                    {
+                        "type": "explanation",
+                        "title": "Differenza pratica",
+                        "items": [
+                            "La diffida è una richiesta formale di pagamento: serve a mettere pressione, fissare un termine e preparare il fascicolo.",
+                            "La messa in mora è la comunicazione con cui si contesta l'inadempimento e si chiede l'adempimento; di solito si integra nella diffida.",
+                            "Il ricorso per decreto ingiuntivo è il passaggio giudiziale: ha senso quando il credito è documentato e il debitore non paga dopo il sollecito.",
+                        ],
+                    }
+                )
+            if any(marker in text for marker in ("checklist", "document", "fatture", "decreto ingiuntivo")):
+                sections.append(
+                    {
+                        "type": "checklist",
+                        "title": "Checklist documentale",
+                        "items": [
+                            "Tre fatture complete con prova di invio o registrazione.",
+                            "Contratto, ordine, preventivo accettato o scambio email che giustifica le prestazioni.",
+                            "Prova di consegna, rapportini, SAL, DDT, accettazione del servizio o assenza di contestazioni.",
+                            "Estratto conto cliente, solleciti, eventuali promesse di pagamento e PEC già inviate.",
+                            "Visura del debitore, PEC corretta, sede legale e dati del creditore.",
+                        ],
+                    }
+                )
+            if any(marker in text for marker in ("rischi", "processuali", "decreto ingiuntivo", "recuperare")):
+                sections.append(
+                    {
+                        "type": "risks",
+                        "title": "Rischi processuali",
+                        "items": [
+                            "Opposizione del debitore se contesta prestazioni, importi o qualità del servizio.",
+                            "Prova documentale insufficiente se oltre alle fatture mancano ordine, consegna o accettazione.",
+                            "Tempi e costi aggiuntivi se il debitore è incapiente o irreperibile.",
+                            "Errore su PEC, sede o dati societari che rallenta notifiche e recupero.",
+                        ],
+                    }
+                )
+            if any(marker in text for marker in ("strategia", "consiglieresti", "recupero credito", "b2b", "decreto ingiuntivo")):
+                sections.append(
+                    {
+                        "type": "strategy",
+                        "title": "Strategia operativa",
+                        "items": [
+                            "Prima verifica se il credito è liquido, scaduto, documentato e non seriamente contestato.",
+                            "Invia una diffida via PEC con termine breve e allega l'elenco delle fatture.",
+                            "Nel frattempo prepara il fascicolo per il ricorso: fatture, contratto/ordine, prove di esecuzione e visura.",
+                            "Se non paga o non propone una trattativa credibile, passa al decreto ingiuntivo con fascicolo già ordinato.",
+                        ],
+                    }
+                )
+            if any(marker in text for marker in ("redigi", "bozza", "diffida")):
+                sections.append(
+                    {
+                        "type": "draft",
+                        "title": "Bozza diffida",
+                        "content": (
+                            "Oggetto: diffida di pagamento per fatture scadute\n\n"
+                            "Spett.le [Società debitrice],\n\n"
+                            "nell'interesse di [Società creditrice], Vi invitiamo a provvedere al pagamento "
+                            "dell'importo complessivo di euro 8.500,00, relativo a tre fatture scadute da circa 90 giorni: "
+                            "[numero/data/importo fattura 1], [numero/data/importo fattura 2], [numero/data/importo fattura 3].\n\n"
+                            "Il pagamento dovrà essere effettuato entro [termine] giorni dal ricevimento della presente "
+                            "sul seguente IBAN: [IBAN]. In mancanza, riceveremo istruzioni per procedere senza ulteriore avviso "
+                            "al recupero coattivo del credito, anche mediante ricorso per decreto ingiuntivo, con aggravio di spese, "
+                            "interessi e competenze.\n\n"
+                            "Restano espressamente riservati tutti i diritti, le azioni e le ragioni della società creditrice.\n\n"
+                            "Distinti saluti\n[Avvocato / Studio]"
+                        ),
+                    }
+                )
+            if not sections:
+                sections.append(
+                    {
+                        "type": "next_steps",
+                        "title": "Prossimi passi",
+                        "items": [
+                            "Carica o indica i documenti disponibili.",
+                            "Dimmi l'obiettivo pratico: parere, checklist, bozza atto o analisi fascicolo.",
+                        ],
+                    }
+                )
+        else:
+            # English operational response
+            if any(marker in text for marker in ("questions", "clarif", "missing", "data", "proceed", "invoice")):
+                sections.append(
+                    {
+                        "type": "questions",
+                        "title": "Points to Clarify",
+                        "items": [
+                            "Number, issue date, due date, and amount of each invoice.",
+                            "Is there a signed contract, purchase order, order confirmation, or general terms?",
+                            "Were goods delivered or services accepted without written dispute?",
+                            "Has the debtor made partial payments, contested amounts, or requested extensions?",
+                            "Do you have the debtor's certified email, verified corporate address, and company registry report?",
+                        ],
+                    }
+                )
+            if any(marker in text for marker in ("explain", "difference", "distinction", "demand", "notice")):
+                sections.append(
+                    {
+                        "type": "explanation",
+                        "title": "Practical Distinction",
+                        "items": [
+                            "A demand letter is a formal payment request: it puts pressure on the debtor, sets a firm deadline, and interrupts statutory limitation periods.",
+                            "A default notice (messa in mora) formalizes debtor breach and activates statutory default interest.",
+                            "A judicial injunction / summary payment order is the court remedy: appropriate when the claim is supported by written documentation and the debtor ignores informal demands.",
+                        ],
+                    }
+                )
+            if any(marker in text for marker in ("checklist", "document", "evidence", "invoice")):
+                sections.append(
+                    {
+                        "type": "checklist",
+                        "title": "Documentary Checklist",
+                        "items": [
+                            "All outstanding invoices with proof of electronic transmission or registered delivery.",
+                            "Contract, purchase order, accepted estimate, or email exchanges establishing agreement on scope.",
+                            "Proof of delivery, shipping notes (DDT), signed completion reports, or uncontested acceptance.",
+                            "Customer account statement, prior reminder correspondence, payment promises, and delivery receipts.",
+                            "Debtor company search, certified corporate email, and legal creditor credentials.",
+                        ],
+                    }
+                )
+            if any(marker in text for marker in ("risk", "procedural", "recover", "litigation")):
+                sections.append(
+                    {
+                        "type": "risks",
+                        "title": "Procedural Risks",
+                        "items": [
+                            "Debtor opposition raising factual disputes regarding service quality, completion, or billing.",
+                            "Insufficient documentary proof if invoices lack proof of delivery or written authorization.",
+                            "Additional time and costs if the debtor is insolvent or asset-depleted.",
+                            "Defects in service or formal address notifications delaying enforcement.",
+                        ],
+                    }
+                )
+            if any(marker in text for marker in ("strategy", "recommend", "debt recovery", "b2b", "recovery")):
+                sections.append(
+                    {
+                        "type": "strategy",
+                        "title": "Operational Strategy",
+                        "items": [
+                            "First verify that the debt is liquid, due, fully documented, and not subject to bona fide dispute.",
+                            "Send a formal demand letter via certified mail or legal counsel with a 7 to 15-day payment deadline.",
+                            "Concurrently assemble the judicial dossier: invoices, proof of delivery, company report, and calculation of statutory interest.",
+                            "If the debtor fails to pay or propose credible terms, file for an expedited judicial summary payment order.",
+                        ],
+                    }
+                )
+            if any(marker in text for marker in ("draft", "letter", "notice", "demand")):
+                sections.append(
+                    {
+                        "type": "draft",
+                        "title": "Draft Legal Notice and Demand for Payment",
+                        "content": (
+                            "Subject: Formal Demand and Notice of Default - Overdue Invoices\n\n"
+                            "To: [Debtor Company Name]\nAttn: Management / Legal Department\n\n"
+                            "On behalf of our client, [Creditor Company Name], we hereby formally request and demand immediate payment of the total overdue amount of €8,500.00 in respect of the following outstanding invoices:\n"
+                            "- [Invoice 1: Number, Date, Amount]\n"
+                            "- [Invoice 2: Number, Date, Amount]\n"
+                            "- [Invoice 3: Number, Date, Amount]\n\n"
+                            "Please remit the total amount within [10/15] calendar days from receipt of this notice to the following account:\n"
+                            "IBAN: [Creditor IBAN]\nBank: [Bank Name]\n\n"
+                            "Failing payment within the specified period, our instructions are to proceed without further notice with judicial debt collection, including an application for an expedited payment order, with additional court costs, statutory interest, and legal fees charged to your company.\n\n"
+                            "All rights and legal actions remain strictly reserved.\n\n"
+                            "Sincerely,\n[Counsel / Legal Firm]"
+                        ),
+                    }
+                )
+            if not sections:
+                sections.append(
+                    {
+                        "type": "next_steps",
+                        "title": "Next Steps",
+                        "items": [
+                            "Upload or reference the available case documents.",
+                            "Specify your desired deliverable: legal opinion, documentary checklist, draft notice, or file analysis.",
+                        ],
+                    }
+                )
+
         memory_items = _memory_from_outcomes(outcomes or {})
         if memory_items:
             sections.insert(
                 0,
                 {
                     "type": "memory",
-                    "title": "Memoria agente applicata",
+                    "title": "Memoria agente applicata" if is_italian else "Applied Agent Memory",
                     "items": [
-                        f"{item.get('title', 'Memoria')}: {item.get('excerpt') or item.get('content') or ''}".strip()
+                        f"{item.get('title', 'Memory')}: {item.get('excerpt') or item.get('content') or ''}".strip()
                         for item in memory_items[:3]
                     ],
                 },
@@ -634,8 +777,13 @@ class JudicexAgentRuntime:
 
         limits = []
         if legal_result and str(legal_result.get("status") or "").lower() == "abstain":
-            limits.append("La parte strettamente normativa resta limitata alle fonti disponibili nella memoria locale.")
-        answer = _render_sections("Imposto il lavoro in modo operativo.", sections)
+            limits.append(
+                "La parte strettamente normativa resta limitata alle fonti disponibili nella memoria locale."
+                if is_italian else
+                "The strictly statutory legal analysis remains limited to sources available in local memory."
+            )
+        intro_text = "Imposto il lavoro in modo operativo." if is_italian else "Structuring the operational response."
+        answer = _render_sections(intro_text, sections)
         return {
             "status": "operational",
             "answer": answer,

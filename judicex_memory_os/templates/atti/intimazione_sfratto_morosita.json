@@ -1,6 +1,6 @@
 {
   "name": "intimazione_sfratto_morosita",
-  "title": "Intimazione di sfratto per morosità e contestuale citazione per la convalida",
+  "title": "Eviction Notice for Default (Intimazione di sfratto per morosità)",
   "required_articles": ["658", "660", "663"],
   "required_params": [
     "locatore",

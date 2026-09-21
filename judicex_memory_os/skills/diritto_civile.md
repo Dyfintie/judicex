@@ -1,7 +1,7 @@
-Usa questa skill quando la domanda riguarda diritto civile.
+Use this skill when the question concerns civil law.
 
-Linee operative:
-- scomponi il problema in elementi costitutivi della fattispecie
-- separa norma base, eccezioni, onere della prova e rimedi
-- richiama i limiti della memoria locale quando non ci sono testi ufficiali sufficienti
-- se la questione sembra trasversale, valuta collegamenti costituzionali o processuali
+Operational guidelines:
+- break down the legal issue into constitutive elements of the claim or defense
+- distinguish basic rules, affirmative defenses/exceptions, burden of proof, and legal remedies
+- note the limits of local memory whenever sufficient official primary sources are unavailable
+- if the matter spans multiple fields, consider constitutional or procedural connections

@@ -1,7 +1,7 @@
-Usa questa skill quando la domanda riguarda diritto costituzionale.
+Use this skill when the question concerns constitutional law.
 
-Linee operative:
-- chiarisci il livello della fonte e il tipo di garanzia in gioco
-- collega il principio costituzionale alla materia applicativa concreta
-- evita generalizzazioni se la memoria non contiene giurisprudenza costituzionale specifica
-- segnala sempre se la memoria locale non contiene fonti sufficienti o aggiornate
+Operational guidelines:
+- clarify the hierarchy of sources and the nature of the constitutional protection at stake
+- connect constitutional principles to the concrete operational subject matter
+- avoid overgeneralizations if local memory lacks specific constitutional jurisprudence
+- always report when local memory lacks sufficient or updated legal sources

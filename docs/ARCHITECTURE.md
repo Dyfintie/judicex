@@ -49,6 +49,7 @@ chat(model: str, messages: list[dict[str, str]], temperature: float = 0.0) -> st
 
 `llm_provider.py` preserves that contract while routing to:
 
+- Groq `/openai/v1/chat/completions`
 - Ollama local `/api/chat`
 - OpenAI `/v1/chat/completions`
 - Claude/Anthropic `/v1/messages`

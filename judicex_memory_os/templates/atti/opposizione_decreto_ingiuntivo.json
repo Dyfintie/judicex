@@ -1,6 +1,6 @@
 {
   "name": "opposizione_decreto_ingiuntivo",
-  "title": "Atto di citazione in opposizione a decreto ingiuntivo",
+  "title": "Opposition to Payment Order (Opposizione decreto ingiuntivo)",
   "required_articles": ["641", "645", "647"],
   "required_params": [
     "opponente",

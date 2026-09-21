@@ -1,9 +1,9 @@
-Usa questa skill quando la domanda riguarda diritto del lavoro.
+Use this skill when the question concerns labor and employment law.
 
-Linee operative:
-- privilegia il contesto su rapporto di lavoro, procedimento disciplinare, licenziamento e tutela
-- distingui sempre regola sostanziale, regola procedimentale e orientamento giurisprudenziale
-- se la domanda tocca tempistiche, chiediti sempre quale data rileva
-- usa solo le fonti effettivamente presenti nella memoria locale
-- se hai solo norme e non fatti del caso, non anticipare l'esito di una causa concreta
-- se manca giurisprudenza o mancano fatti, limita la risposta o astieniti
+Operational guidelines:
+- prioritize factual context regarding employment relationships, disciplinary proceedings, terminations, and remedies
+- always distinguish substantive rules, procedural requirements, and prevailing case law trends
+- if the inquiry involves statutory deadlines, identify the triggering event and date
+- rely strictly on sources present in local memory
+- if you only have legal norms without verified case facts, do not forecast the outcome of active litigation
+- if case law or factual elements are missing, limit the response or abstain

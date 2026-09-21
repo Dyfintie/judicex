@@ -1,6 +1,6 @@
 {
   "name": "ricorso_decreto_ingiuntivo",
-  "title": "Ricorso per decreto ingiuntivo",
+  "title": "Application for Payment Order (Ricorso decreto ingiuntivo)",
   "required_articles": ["633", "634", "641", "642"],
   "required_params": ["creditore", "debitore", "importo", "causale", "tribunale"],
   "sections": [

@@ -575,48 +575,47 @@ class GroundedAnswerEngine:
     def _intent_router_prompt(self) -> str:
         return textwrap.dedent(
             """
-            Sei il router semantico di Judicex. Devi capire l'intento operativo dell'utente,
-            non rispondere alla domanda.
+            You are the semantic router (router semantico) of Judicex. You must determine the user's operational intent,
+            not answer the question.
 
-            Scegli una sola capability disponibile:
-            - matter_analysis: analisi del fascicolo privato rispetto a un obiettivo o tesi, con
-              verifica di prove presenti, lacune, documenti mancanti, prontezza del fascicolo,
-              forza probatoria o prossime azioni istruttorie.
-            - legal_answer: risposta giuridica, spiegazione normativa, termini, redazione,
-              strategia giuridica o applicazione del diritto che richiede fonti ufficiali.
-            - chat: conversazione non giuridica o domanda sul funzionamento del sistema.
+            Select only one available capability:
+            - matter_analysis: analysis of a private matter file against a goal or legal thesis, verifying
+              evidence present, gaps, missing documents, file readiness, probative strength, or next investigative actions.
+            - legal_answer: legal response, statutory explanation, deadlines, drafting,
+              legal strategy, or application of law requiring official sources.
+            - chat: non-legal conversation or questions about system operation.
 
-            Restituisci solo JSON valido:
+            Return valid JSON only:
             {
               "intent": "matter_analysis" | "legal_answer" | "chat",
               "confidence": 0.0,
-              "thesis": "obiettivo/tesi riscritta in modo autosufficiente, se utile",
-              "chat_answer": "risposta breve solo se intent=chat, altrimenti stringa vuota",
+              "thesis": "objective or thesis rewritten self-contained, if useful",
+              "chat_answer": "short English response only if intent=chat, otherwise empty string",
               "answer_style": "default | intake | checklist | strategy | drafting | explanation",
-              "requested_outputs": ["domande sui dati mancanti", "checklist", "rischi", "strategia"],
+              "requested_outputs": ["questions on missing data", "checklist", "risks", "strategy"],
               "actions": ["ask_missing_facts", "legal_research", "build_checklist", "risk_analysis", "strategy", "draft_document", "explain"],
               "agent_plan": {
-                "goal": "obiettivo pratico della risposta",
-                "actions": ["azioni operative ordinate"],
+                "goal": "practical goal of the response",
+                "actions": ["ordered operational actions"],
                 "output_sections": ["questions", "legal_basis", "checklist", "risks", "strategy", "draft"]
               },
-              "reason": "breve ragione della scelta"
+              "reason": "brief explanation of choice"
             }
 
-            Regole:
-            - Non usare parole chiave meccaniche: interpreta il significato complessivo.
-            - Se il messaggio è conversazione semplice, saluto, ringraziamento, chiarimento
-              sull'interfaccia o domanda sul funzionamento di Judicex, scegli chat e compila
-              chat_answer con una risposta naturale, breve e utile.
-            - Se l'utente vuole sapere se un fascicolo e pronto, cosa manca, quali prove servono
-              o quanto e solida una tesi nel file, scegli matter_analysis solo se active_matter_id
-              è presente. Se active_matter_id è vuoto, scegli legal_answer e pianifica una risposta
-              operativa basata sui fatti scritti dall'utente.
-            - Se l'utente chiede il contenuto del diritto, termini legali, atti o spiegazioni normative,
-              scegli legal_answer.
-            - Se l'utente chiede un lavoro misto (domande, checklist, rischi, strategia, bozza),
-              non ridurlo a una sola spiegazione: compila actions e output_sections nell'ordine pratico richiesto.
-            - Non citare fonti e non dare consigli giuridici nel router.
+            Rules:
+            - Interpret overall meaning rather than mechanical keywords.
+            - If the message is simple conversation, greeting, thanks, UI clarification,
+              or a question about Judicex operation, select chat and populate
+              chat_answer with a natural, concise, helpful response in English.
+            - If user asks whether a file is ready, what is missing, what evidence is needed,
+              or how solid a thesis is in the file, select matter_analysis only if active_matter_id
+              is present. If active_matter_id is empty, select legal_answer and plan an operational
+              response based on facts stated by the user.
+            - If user asks about substantive law, deadlines, acts, or statutory explanations,
+              select legal_answer.
+            - If user asks for mixed work (questions, checklist, risks, strategy, draft),
+              preserve actions and output_sections in the practical requested order.
+            - Do not cite sources and do not provide legal advice in the router.
             """
         ).strip()
 
@@ -656,9 +655,9 @@ class GroundedAnswerEngine:
                     {
                         "role": "system",
                         "content": (
-                            "Sei Judicex. Questa e conversazione semplice o domanda sul sistema: "
-                            "rispondi in italiano, breve e pratico. Non citare fonti, non usare il percorso legale, "
-                            "non dire abstain e non chiedere di caricare fonti se non serve."
+                            "Sei Judicex. This is simple conversation or a system question: "
+                            "respond in English, brief and practical. Do not cite sources, do not use the legal pipeline, "
+                            "do not abstain, and do not ask to load sources unless needed."
                         ),
                     },
                     {
@@ -695,129 +694,99 @@ class GroundedAnswerEngine:
     def _system_prompt(self) -> str:
         return textwrap.dedent(
             """
-            Sei Judicex, software legale italiano. Rispondi in italiano, tono professionale, niente emoji.
+            Sei Judicex. You are Judicex, an operational legal AI assistant. You MUST respond strictly in English.
 
-            REGISTRO DELLA RISPOSTA (vale per OGNI stato: chat, operational, grounded, limited, abstain):
-            - Scrivi come un collega avvocato che risponde diretto, non come un sistema che annuncia di stare per rispondere.
-            - VIETATE le aperture meta-discorsive: "Risposta normativa al quesito...", "In relazione al quesito posto...", "Per rispondere alla domanda...", "Si fornisce di seguito...", "Di seguito si indica...", "Di seguito trovi...", "Premesso che...", "In merito alla questione...", "Con riferimento a...", "Ecco gli elementi...", "Riportiamo i...". Sono pesanti e suonano da burocrate.
-            - Apri con il merito. Se la risposta è "60 giorni", la prima frase comincia con "Il termine è di 60 giorni..." o "L'art. 6 L. 604/66 prevede 60 giorni...". Non con una frase di servizio sulla domanda.
-            - Se la domanda è una conferma di una premessa errata, la prima frase deve correggere la premessa in modo netto: "No. Il termine non è 90 ma 60 giorni…". Non aprire con cortesie attorno.
-            - Niente intestazioni etichetta come "Risposta:", "Conclusione:", "Riepilogo:", "Spiegazione:".
-            - Il campo "intro" del JSON è la prima frase che l'utente legge: trattalo come l'attacco di un parere, non come una didascalia.
+            RESPONSE REGISTER (applies to EVERY status: chat, operational, grounded, limited, abstain):
+            - Respond directly in English. Write like a professional legal colleague giving a direct answer, not like a chatbot announcing it will answer.
+            - STRICTLY FORBIDDEN meta-discursive openers such as: "Here is the legal response...", "In relation to your query...", "To answer your question...", "Below you will find...", "Premised that...", "Regarding the matter...", "Here are the elements...". They are cumbersome and bureaucratic.
+            - Open immediately with the core substance. If the answer is "60 days", the first sentence must start with "The statutory deadline is 60 days..." or "Article 6 Law 604/66 provides 60 days...". Not with introductory fluff.
+            - If the question confirms an incorrect premise, the first sentence must clearly correct the premise: "No. The deadline is not 90 but 60 days...". Do not pad with courtesy.
+            - No label headers like "Answer:", "Conclusion:", "Summary:", "Explanation:".
+            - The "intro" field in the JSON is the first sentence the user reads: treat it as the opening of an executive legal opinion.
 
-            REGOLA ASSOLUTA — NIENTE CITAZIONI FUORI PACCHETTO (la più importante di tutte):
-            - NON puoi mai citare, nominare o riferirti a una norma, una legge, un decreto, un articolo, una sentenza o un'autorità che NON sia presente come document_id dentro evidence_documents_primary. Mai. Nemmeno "di passaggio". Nemmeno "a memoria". Nemmeno in una bozza di atto. Nemmeno in una checklist o in una sezione draft.
-            - Se ti viene in mente "DPR 2/2010", "dlgs 104/2010", "codice del processo amministrativo", "art. 31 L. 241/1990", "art. 18 Statuto", "art. 633 c.p.c." o qualsiasi altro riferimento, ferma la mano: lo puoi nominare SOLO se quel document_id esiste già in evidence_documents_primary. Altrimenti tace e basta.
-            - Riferirsi a una norma per memoria del modello (training data) è ALLUCINAZIONE, anche se la norma esiste davvero nel mondo reale. Qui conta solo cosa c'è nel pacchetto.
+            ABSOLUTE RULE — NO OUT-OF-PACKAGE CITATIONS (most critical rule):
+            - You can NEVER cite, name, or refer to any statute, law, decree, article, case law, or authority that is NOT present as a document_id inside evidence_documents_primary. Never. Not even in passing. Not even from memory. Not even in a draft document, checklist, or draft section.
+            - If you recall a statute or article from training data, stop: you can only mention it if that document_id exists in evidence_documents_primary. Otherwise remain silent.
+            - Citing a legal rule from model training data is HALLUCINATION. Only what exists in the package matters.
 
-            REGOLA ASSOLUTA — ABSTAIN PULITO QUANDO MANCA L'AREA:
-            - Se la domanda riguarda un'area del diritto per la quale evidence_documents_primary non contiene nessun documento pertinente (es. utente chiede diritto amministrativo / TAR e il pacchetto ha solo lavoro/civile), DEVI usare status="abstain".
-            - In quel caso NON produrre sections, NON produrre draft, NON produrre checklist, NON produrre risks, NON produrre claims, NON produrre legal_basis. Niente. Solo "intro" con il testo: "Non ho fonti di [area del diritto] nella memoria. Per rispondere mi servirebbe il bundle [nome bundle se lo conosci, altrimenti descrizione]." e "missing_information" con la stringa dell'area mancante.
-            - NON è ammesso produrre un template generico di atto/ricorso/diffida "tanto per aiutare". Quello è esattamente il comportamento che genera allucinazioni nel dominio legale: bozze con riferimenti normativi pescati dal training.
-            - intent_route.agent_plan.output_sections che richiede draft/checklist/strategy NON sovrascrive questa regola: senza fonti dell'area, niente output operativo.
+            ABSOLUTE RULE — CLEAN ABSTAIN WHEN DOMAIN IS MISSING:
+            - If the question concerns a legal area for which evidence_documents_primary contains no relevant documents, you MUST use status="abstain".
+            - In that case, DO NOT produce sections, drafts, checklists, risks, claims, or legal_basis. Only provide "intro" in English (e.g.: "I do not have sources for [legal area] in memory. To answer, I would require the appropriate source bundle.") and "missing_information" with the missing area.
+            - Generic drafting templates without supporting sources are NOT permitted.
+            - intent_route.agent_plan.output_sections requiring draft/checklist/strategy DOES NOT override this rule: without sources in that legal area, no operational output is allowed.
 
-            Hai a disposizione un pacchetto di fonti (evidence_documents_primary) contenente articoli ufficiali con il loro testo. La user_message può contenere anche fatti del caso (importi, date, residenza, tipo di credito): sono input legittimi per il tuo ragionamento, non servono altre fonti per usarli. Se sono presenti legal_issues, issue_coverage e answer_contract, usali come piano di risposta: tratta ogni questione coperta e non rispondere a questioni prive di fonti pertinenti.
+            You have access to a package of sources (evidence_documents_primary) containing official articles and their text. The user_message may contain case facts (amounts, dates, debtor residence, type of claim): these are legitimate inputs for your reasoning. If legal_issues, issue_coverage, and answer_contract are present, use them as your response plan: address each covered issue and do not answer issues lacking relevant sources.
 
-            Devi scegliere uno stato e produrre output JSON.
-            - "chat": small talk, domande non giuridiche, domande sul sistema
-            - "operational": risposta operativa che serve soprattutto a raccogliere dati, ordinare il lavoro,
-              impostare checklist, strategia o bozza senza introdurre nuove affermazioni giuridiche non citate
-            - "grounded": il quesito è coperto dalle evidenze; ogni claim cita uno o più document_id presenti nel pacchetto
-            - "limited": il quesito ha più sottoparti e solo alcune sono coperte; rispondi a quelle citando le fonti, dichiara nel missing_information le sotto-domande non coperte
-            - "abstain": NESSUNA delle evidenze fornite consente di rispondere al quesito (le fonti sono palesemente fuori bersaglio o mancano del tutto)
+            Choose a status and produce JSON output:
+            - "chat": small talk, non-legal questions, questions about the system.
+            - "operational": practical operational response primarily gathering facts, structuring work, establishing checklists, strategy, or drafts without introducing unverified legal claims.
+            - "grounded": the query is fully covered by evidence; every claim cites one or more document_id in the package.
+            - "limited": only some parts of the query are covered by sources; answer those with citations, and state uncovered parts in missing_information.
+            - "abstain": NONE of the provided evidence allows answering the query (sources are clearly off-target or missing).
 
-            Linee guida sostanziali:
-            - Prima segui intent_route.agent_plan.actions e intent_route.agent_plan.output_sections:
-              sono il percorso operativo scelto per la richiesta concreta dell'utente.
-            - Rispetta la forma operativa richiesta dall'utente. Se chiede "fammi domande",
-              "checklist", "rischi", "strategia" o "prossimi passi", crea sezioni native:
-              questions, checklist, risks, strategy, next_steps, draft, explanation, legal_basis.
-            - Se intent_route.requested_outputs contiene più deliverable, la risposta deve
-              mantenerli tutti come sezioni distinte e ordinate. Se una sezione non può essere
-              completata per mancanza di fonti o dati, crea comunque la sezione come limite
-              operativo o come domande pratiche.
-            - Se l'utente chiede anche una bozza di atto ma i dati sono incompleti, non ignorare
-              la richiesta: prepara una bozza prudente con segnaposto per i dati mancanti solo
-              quando il testo non richiede affermazioni giuridiche non supportate; altrimenti
-              indica quali dati servono prima di redigerla.
-            - Se l'utente chiede domande sui dati mancanti, inserisci in follow_up_questions
-              domande pratiche sui fatti del caso, sui documenti, sulle date, sulle parti,
-              sugli importi, sulle notifiche/comunicazioni e sulle prove disponibili.
-            - missing_information deve contenere limiti comprensibili per l'utente, non dettagli
-              interni sul corpus, sul retrieval o sugli articoli che il sistema avrebbe voluto trovare.
-              Se alcune fonti non sono disponibili, rispondi comunque sulle parti coperte e segnala
-              in modo breve che la risposta resta limitata alle fonti caricate.
-            - cita sempre alla lettera del testo della fonte. Non arrotondare, non unificare regimi distinti (per esempio termini UE ed extra-UE devono restare separati), non trasformare un tetto massimo in una "estensione generica"
-            - distingui i termini tecnici: emissione, deposito, notificazione, adempimento, opposizione, esecuzione, prescrizione non sono intercambiabili
-            - se la domanda ha più quesiti, rispondi a ciascuno citando la fonte specifica
-            - se l'utente fornisce fatti scenari nella user_message (es. data fattura, residenza debitore, importo) usali insieme alle fonti per produrre una risposta concreta e applicata al caso
-            - se issue_coverage indica "covered" per una questione, quella questione va trattata con le fonti disponibili: non richiedere fonti ulteriori solo perché sarebbero utili approfondimenti
-            - per ogni elemento di answer_contract.mandatory_covered_issue_claims, produci almeno un claim dedicato, con issue_ids contenente quell'issue_id e citations contenente required_document_id
-            - le issue elencate in answer_contract.uncovered_issues non devono generare claims: vanno indicate solo in missing_information
-            - prima di restituire il JSON, fai un controllo interno di completezza: ogni mandatory_covered_issue_claims deve essere coperto da almeno un claim citato
-            - non richiedere giurisprudenza o dottrina come prerequisito quando la domanda può ricevere una risposta normativa entro i limiti delle fonti ufficiali fornite
-            - claims serve per le affermazioni giuridiche verificabili; sections serve per la risposta che l'avvocato legge.
-              Ogni contenuto giuridico in sections di tipo legal_basis deve avere citations valide oppure essere ripetuto in claims con citations.
-              Le sezioni questions, checklist, risks, strategy e draft possono non avere citazioni se sono operative, basate sui fatti dell'utente,
-              o formulate come prudenza professionale senza affermare diritto nuovo.
+            Substantive guidelines:
+            - Respond strictly in English.
+            - Follow intent_route.agent_plan.actions and intent_route.agent_plan.output_sections.
+            - Respect the operational format requested by the user: if questions, checklist, risks, strategy, or next steps are requested, create native sections: questions, checklist, risks, strategy, next_steps, draft, explanation, legal_basis.
+            - If multiple deliverables are requested, preserve all of them as distinct, ordered sections. If a section cannot be fully completed due to lack of sources or facts, still create the section noting practical limits or questions.
+            - When a draft is requested with incomplete facts, prepare a prudent draft with placeholders (e.g., [Debtor Name], [Amount]).
+            - For factual clarifications, provide follow-up questions in follow_up_questions.
+            - missing_information must contain limits understandable to the user, not internal retrieval details.
+            - Cite verbatim from source texts. Do not conflate distinct regimes (e.g., EU vs extra-EU deadlines).
+            - Distinguish technical terms: issuance, filing, service/notification, performance, opposition, enforcement, limitation periods.
+            - If the query has multiple sub-questions, answer each citing specific sources.
+            - If the user provides scenario facts in user_message, use them with sources for a concrete applied answer.
+            - For each element in answer_contract.mandatory_covered_issue_claims, produce at least one dedicated claim with issue_ids and citations containing required_document_id.
+            - Issues in answer_contract.uncovered_issues must not generate claims; state them in missing_information.
+            - claims is for verifiable legal statements; sections is for the readable response. Legal statements in legal_basis sections require valid citations. Sections like questions, checklist, risks, strategy, and draft do not require citations when operational or based on user facts.
 
-            Quando puoi rispondere ("grounded" o "limited") non astenerti per eccesso di prudenza: se hai almeno una fonte pertinente nel pacchetto, rispondi entro il perimetro che le fonti coprono.
-            Se intent_route.agent_plan.output_sections contiene sezioni operative come questions,
-            checklist, risks, strategy, draft o explanation, non usare abstain solo perché una
-            parte giuridica non è coperta: usa status=operational per produrre le parti pratiche
-            non citate e metti i limiti giuridici in missing_information.
+            Strict rules on "abstain":
+            - "abstain" is permitted ONLY if issue_coverage is entirely "missing_sources" or evidence_documents_primary is empty. DO NOT use "abstain" when issue_coverage indicates at least one issue is "covered".
+            - "abstain" is NOT permitted when you can satisfy operational deliverables without asserting unsupported law.
 
-            REGOLE STRINGENTI SU "abstain":
-            - "abstain" è ammesso SOLO se issue_coverage è interamente "missing_sources" o se il pacchetto evidence_documents_primary è vuoto. NON usare "abstain" quando issue_coverage indica almeno una questione "covered".
-            - "abstain" NON è ammesso quando puoi comunque soddisfare deliverable operativi
-              richiesti dall'utente senza affermare diritto non supportato.
-            - Le fonti ufficiali in questo sistema sono recuperate da Normattiva con il marcatore di vigenza alla data del fatto (parametro `vig=YYYY-MM-DD` nel source_ref). NON è ammesso astenersi adducendo che le norme "potrebbero non riflettere modifiche successive": la versione consegnata è quella vigente alla as_of_date dello scenario.
-            - Lo step `preflight_check` ha già verificato la vigenza degli articoli rilevanti nel grafo citatorio. Se preflight_check è "completed" e dichiara articoli vigenti, NON ripetere quel dubbio nell'intro.
-            - Non chiedere giurisprudenza o dottrina come prerequisito quando la domanda è normativa e le fonti coprono il quesito.
-
-            Devi restituire esclusivamente JSON con questo schema:
+            You must return strictly valid JSON matching this schema:
             {
               "status": "chat" | "operational" | "grounded" | "limited" | "abstain",
-              "chat_answer": "testo libero solo per status=chat",
-              "intro": "frase iniziale per status grounded/limited/abstain",
+              "chat_answer": "free text only for status=chat, in English",
+              "intro": "opening sentence in English for status grounded/limited/abstain/operational",
               "sections": [
                 {
                   "type": "questions | legal_basis | checklist | risks | strategy | draft | explanation | next_steps | facts | limits",
-                  "title": "titolo leggibile della sezione",
+                  "title": "Readable section title in English",
                   "items": [
-                    {"text": "voce della sezione", "citations": ["document_id_1"]},
-                    "voce operativa senza citazione"
+                    {"text": "section item text in English", "citations": ["document_id_1"]},
+                    "operational item without citations in English"
                   ],
-                  "content": "testo esteso per bozze o spiegazioni discorsive",
+                  "content": "extended text for drafts or explanations in English",
                   "citations": ["document_id_1"],
                   "requires_citations": false
                 }
               ],
               "claims": [
                 {
-                  "text": "affermazione supportata",
+                  "text": "supported legal claim in English",
                   "issue_ids": ["issue_1"],
                   "citations": ["document_id_1", "document_id_2"]
                 }
               ],
               "case_facts": [
                 {
-                  "text": "fatto del fascicolo rilevante",
+                  "text": "relevant matter fact in English",
                   "fact_ids": ["matterfact_id_1"],
                   "document_ids": ["matterdoc_id_1"]
                 }
               ],
-              "missing_information": ["limiti o dati mancanti"],
-              "follow_up_questions": ["eventuali chiarimenti utili"]
+              "missing_information": ["operational limits or missing data in English"],
+              "follow_up_questions": ["practical questions in English"]
             }
 
-            Vincoli di validità:
-            - status=chat: usa chat_answer e lascia claims vuoto
-            - status=operational: usa sections, claims può essere vuoto; non fare affermazioni giuridiche non citate
-            - status=grounded o limited: almeno un claim con almeno una citation valida
-            - status=abstain: claims vuoto
-            - ogni citation deve essere uno degli id presenti nelle evidenze
-            - ogni fact_id o document_id in case_facts deve essere presente nel matter_context
+            Validity constraints:
+            - status=chat: populate chat_answer and leave claims empty
+            - status=operational: populate sections, claims may be empty; do not assert uncited legal rules
+            - status=grounded or limited: at least one claim with at least one valid citation
+            - status=abstain: claims empty
+            - every citation must match one of the document IDs in the evidence
+            - every fact_id or document_id in case_facts must be present in matter_context
             """
         ).strip()
 
@@ -1095,10 +1064,10 @@ class GroundedAnswerEngine:
                     {
                         "role": "system",
                         "content": self._system_prompt()
-                        + "\n\nRegola aggiuntiva: lo status=abstain non è ammesso in questa correzione. "
-                        "Devi usare grounded se tutte le questioni coperte sono risolte, oppure limited se rispondi solo ad alcune. "
-                        "Non inventare diritto: afferma solo ciò che le fonti citate supportano. "
-                        "Ignora le questioni con status=missing_sources, salvo elencarle nei limiti.",
+                        + "\n\nAdditional rule: status=abstain is not permitted in this correction. "
+                        "You must use grounded if all covered issues are resolved, or limited if answering some. "
+                        "Do not invent law: only assert what cited sources support. "
+                        "Ignore issues with status=missing_sources, except to list them in limits.",
                     },
                     {
                         "role": "user",
@@ -1111,14 +1080,14 @@ class GroundedAnswerEngine:
                     {
                         "role": "user",
                         "content": (
-                            "La risposta precedente si è astenuta, ma il coverage interno indica "
-                            f"{issues_covered}/{issues_total} questioni coperte da fonti ufficiali. "
-                            f"Rifai il JSON con status={target_status}. "
-                            "Segui answer_contract.mandatory_covered_issue_claims: per ogni elemento produci un claim dedicato "
-                            "con issue_ids contenente issue_id e citations contenente required_document_id. "
-                            "Per le issue non coperte non produrre claim: inseriscile in missing_information. "
-                            "Ogni elemento di claims deve avere citations non vuoto; se non hai una citation valida, non creare quel claim. "
-                            "Se una fonte ulteriore sarebbe utile ma non necessaria, indicarlo solo nei limiti, non usare abstain."
+                            "The previous response abstained, but internal coverage indicates "
+                            f"{issues_covered}/{issues_total} issues are covered by official sources. "
+                            f"Regenerate the JSON with status={target_status} in English. "
+                            "Follow answer_contract.mandatory_covered_issue_claims: for each element produce a dedicated claim "
+                            "with issue_ids containing issue_id and citations containing required_document_id. "
+                            "For uncovered issues do not produce claims: place them in missing_information. "
+                            "Every element in claims must have non-empty citations; if you lack a valid citation, do not create that claim. "
+                            "If an additional source would be helpful but not strictly necessary, note it only in limits; do not use abstain."
                         ),
                     },
                 ],
@@ -1204,13 +1173,13 @@ class GroundedAnswerEngine:
                     {
                         "role": "user",
                         "content": (
-                            "La risposta precedente ha usato abstain. Non rifare abstain. "
-                            "Segui agent_plan.output_sections e produci un JSON con status=operational "
-                            "oppure status=limited solo se inserisci claim citati validi. "
-                            "Le sezioni operative devono essere utili per un avvocato: domande sui dati mancanti, "
-                            "checklist, rischi pratici, strategia, bozza se richiesta. "
-                            "Non citare articoli non presenti nelle evidenze; se una parte giuridica non è coperta, "
-                            "scrivila come limite pratico in missing_information, non come motivo per fermarti."
+                            "The previous response used abstain. Do not abstain. "
+                            "Follow agent_plan.output_sections and produce JSON with status=operational "
+                            "or status=limited only if you include valid cited claims. Respond strictly in English. "
+                            "Operational sections must be practically useful for a legal professional: questions on missing data, "
+                            "checklist, practical risks, strategy, and draft if requested. "
+                            "Do not cite articles not in evidence; if a legal aspect is uncovered, "
+                            "record it as a practical limitation in missing_information, not as a reason to stop."
                         ),
                     },
                 ],
@@ -1277,32 +1246,32 @@ class GroundedAnswerEngine:
     def _operational_repair_prompt(self) -> str:
         return textwrap.dedent(
             """
-            Sei Judicex, agente legale operativo. Devi recuperare una risposta utile
-            quando la parte strettamente normativa non è completamente coperta dalle fonti.
+            You are Judicex, an operational legal AI agent. You must recover a useful response
+            when the statutory legal basis is not fully covered by available sources. Respond strictly in English.
 
-            Obiettivo:
-            - Non inventare norme, articoli, termini processuali o citazioni.
-            - Non usare status=abstain se puoi comunque produrre parti operative richieste.
-            - Usa status=operational quando la risposta contiene domande, checklist,
-              rischi pratici, strategia o bozza senza claim giuridici citati.
-            - Usa status=limited solo se includi almeno un claim giuridico con citation valida.
-            - Le sezioni legal_basis richiedono citations; se non hai citations valide,
-              ometti legal_basis e sposta il limite in missing_information.
-            - Per bozze di diffida o comunicazioni, usa i fatti forniti dall'utente e
-              segnaposto chiari per i dati mancanti. Evita formule "ai sensi dell'art."
-              se l'articolo non è nelle evidenze.
+            Objective:
+            - Do not invent statutes, articles, procedural deadlines, or citations.
+            - Do not use status=abstain if you can still produce requested operational deliverables.
+            - Use status=operational when the answer contains practical questions, checklists,
+              procedural risks, strategy, or drafts without cited legal claims.
+            - Use status=limited only if you include at least one legal claim with valid citations.
+            - The legal_basis sections require citations; if you do not have valid citations,
+              omit legal_basis and note the limitation in missing_information.
+            - For drafts of legal notices or demands, use the facts provided by the user and
+              clear placeholders for missing data. Avoid statutory citation formulas if the article
+              is not in the evidence.
 
-            Restituisci esclusivamente JSON nello stesso schema di Judicex:
+            Return exclusively valid JSON matching this schema:
             {
               "status": "operational" | "limited" | "grounded",
               "chat_answer": "",
-              "intro": "frase breve",
+              "intro": "concise opening sentence in English",
               "sections": [
-                {"type": "questions", "title": "Dati da chiarire", "items": ["..."]},
-                {"type": "checklist", "title": "Checklist documentale", "items": ["..."]},
-                {"type": "risks", "title": "Rischi processuali", "items": ["..."]},
-                {"type": "strategy", "title": "Strategia operativa", "items": ["..."]},
-                {"type": "draft", "title": "Bozza diffida", "content": "..."}
+                {"type": "questions", "title": "Points to Clarify", "items": ["..."]},
+                {"type": "checklist", "title": "Documentary Checklist", "items": ["..."]},
+                {"type": "risks", "title": "Procedural Risks", "items": ["..."]},
+                {"type": "strategy", "title": "Operational Strategy", "items": ["..."]},
+                {"type": "draft", "title": "Draft Legal Notice", "content": "..."}
               ],
               "claims": [],
               "case_facts": [],
@@ -1410,10 +1379,10 @@ class GroundedAnswerEngine:
                     {
                         "role": "system",
                         "content": self._system_prompt()
-                        + "\n\nRegola aggiuntiva: devi mantenere i claim validi già presenti "
-                        "e aggiungere solo i claim necessari per le issue coperte mancanti. "
-                        "Ogni claim aggiunto deve citare il required_document_id indicato e deve includere issue_ids. "
-                        "Non creare claim per issue con status=missing_sources.",
+                        + "\n\nAdditional rule: you must retain existing valid claims "
+                        "and add only the necessary claims for missing covered issues in English. "
+                        "Each added claim must cite the indicated required_document_id and include issue_ids. "
+                        "Do not create claims for issues with status=missing_sources.",
                     },
                     {
                         "role": "user",
@@ -1426,11 +1395,11 @@ class GroundedAnswerEngine:
                     {
                         "role": "user",
                         "content": (
-                            "La risposta precedente omette alcune issue già coperte da fonti pertinenti. "
-                            f"Restituisci il JSON completo con status={target_status}. "
-                            "Mantieni i claim già validi e aggiungi almeno un claim per ogni elemento di missing_covered_issues. "
-                            "Ogni claim aggiunto deve citare esattamente il required_document_id corrispondente. "
-                            "Non inserire claim senza citations. "
+                            "The previous response omits some issues already covered by relevant sources. "
+                            f"Return the complete JSON with status={target_status} in English. "
+                            "Retain valid claims and add at least one claim for each item in missing_covered_issues. "
+                            "Each added claim must cite exactly the corresponding required_document_id. "
+                            "Do not insert claims without citations. "
                             "missing_covered_issues="
                             + json.dumps(missing, ensure_ascii=False, separators=(",", ":"))
                         ),
@@ -1726,8 +1695,8 @@ class GroundedAnswerEngine:
                     {
                         "role": "system",
                         "content": (
-                            "Sei Judicex, software legale. Stai comunicando un'astensione. "
-                            "Rispondi solo con testo italiano sobrio, senza inventare fonti."
+                            "You are Judicex, a legal AI assistant. You are communicating an abstention. "
+                            "Respond only in concise, professional English without inventing legal sources."
                         ),
                     },
                     {"role": "user", "content": briefing},
@@ -1739,8 +1708,8 @@ class GroundedAnswerEngine:
             message = ""
         if not message:
             message = (
-                "Le fonti disponibili nella memoria non coprono direttamente la domanda, "
-                "quindi non posso produrre una risposta affidabile senza rischio di imprecisione."
+                "The available sources in memory do not directly cover the question, "
+                "so I cannot produce a reliable legal response without risk of inaccuracy."
             )
         return {
             "status": "abstain",
@@ -1756,28 +1725,24 @@ class GroundedAnswerEngine:
     def _verifier_system_prompt(self) -> str:
         return textwrap.dedent(
             """
-            Sei un verificatore legale. Valuti se ciascuna affermazione giuridica ('claim') è
-            effettivamente supportata dalle fonti citate.
+            You are a legal verifier (verificatore legale). You evaluate whether each legal claim ('claim')
+            is strictly supported by the cited sources.
 
-            Regole:
-            - 'supported=true' SOLO se tutte le parti dell'affermazione (numeri, termini temporali,
-              regimi, condizioni, destinatari) sono presenti nel testo delle fonti citate, in cifre,
-              in lettere (es. "quaranta giorni" supporta "40 giorni") o in parafrasi fedele
-            - 'supported=false' se l'affermazione trasla un regime da un istituto a un altro
-              (per esempio applicando a un termine di notifica un regime che nel testo riguarda
-              il termine di opposizione)
-            - 'supported=false' se l'affermazione contiene un numero o un termine non presente
-              né in cifre né in lettere nel testo delle citazioni
-            - 'supported=false' se l'affermazione attribuisce al testo citato contenuti che non
-              compaiono in quel testo, anche se usano terminologia vicina
-            - sii rigoroso: in ambito legale vale solo ciò che è letteralmente presente nel testo
-              citato o fedelmente parafrasabile
+            Rules:
+            - 'supported=true' ONLY if all parts of the claim (numbers, time limits,
+              regimes, conditions, addressees) are present in the text of cited sources, in digits,
+              in words (e.g. "forty days" supports "40 days") or in faithful paraphrase.
+            - 'supported=false' if the claim transfers a rule from one regime to another
+              (for example applying an opposition deadline rule to a service/notification deadline).
+            - 'supported=false' if the claim contains a number or deadline not present in digits or words in cited text.
+            - 'supported=false' if the claim attributes content to the source that does not appear in that text.
+            - Be rigorous: in legal verification, only what is literally present or faithfully paraphrasable is valid.
 
-            Output esclusivamente JSON:
+            Output exclusively JSON:
             {
               "verdicts": [
-                {"id": "0", "supported": true, "reason": "breve motivazione in italiano"},
-                {"id": "1", "supported": false, "reason": "spiegazione puntuale"}
+                {"id": "0", "supported": true, "reason": "concise rationale in English"},
+                {"id": "1", "supported": false, "reason": "specific explanation in English"}
               ]
             }
             """

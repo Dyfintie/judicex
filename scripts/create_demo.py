@@ -11,77 +11,77 @@ if str(ROOT_DIR) not in sys.path:
 from judicex_memory_os.store import LegalMemoryStore
 
 
-DEMO_TEXT = """Alfa S.r.l. ha emesso fattura n. 42 del 15 gennaio 2026 per Euro 8.500,00 nei confronti di Beta S.r.l.
+DEMO_TEXT = """Alfa Corp issued invoice no. 42 on January 15, 2026 for $8,500.00 to Beta LLC.
 
-La fattura doveva essere pagata entro il 15 febbraio 2026.
-Beta S.r.l. non ha pagato. Alfa S.r.l. ha inviato sollecito scritto il 28 febbraio 2026 e diffida il 10 marzo 2026.
-Il contratto prevede foro di Milano e interessi moratori in caso di ritardo.
+The invoice was due by February 15, 2026.
+Beta LLC has failed to make payment. Alfa Corp sent a written payment reminder on February 28, 2026 and a formal default notice on March 10, 2026.
+The contract stipulates statutory interest and late penalties.
 """
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Create a fake Judicex demo database.")
+    parser = argparse.ArgumentParser(description="Create a Judicex English demo database.")
     parser.add_argument("--db", default="./memory.demo.db")
     args = parser.parse_args()
 
     db_path = Path(args.db)
     with LegalMemoryStore(db_path) as store:
         matter = store.create_matter(
-            "Demo recupero credito",
-            client_name="Alfa S.r.l.",
-            area="civile",
-            summary="Fascicolo fittizio per provare Judicex senza dati privati.",
+            "Debt Recovery Demo (Alfa v. Beta)",
+            client_name="Alfa Corp",
+            area="civil",
+            summary="Sample matter file to test Judicex without sensitive client data.",
         )
-        folder = store.create_matter_folder(matter["id"], "Documenti demo")
+        folder = store.create_matter_folder(matter["id"], "Demo Documents")
         document = store.add_matter_document(
             matter["id"],
-            title="Promemoria credito Alfa Beta",
+            title="Debt Recovery Memorandum - Alfa & Beta",
             kind="memo",
             content=DEMO_TEXT,
             metadata={"folder_id": folder.get("id", "")},
         )["document"]
-        review = store.create_tabular_review(matter["id"], title="Review credito", query="fattura pagamento")
+        review = store.create_tabular_review(matter["id"], title="Debt Review", query="invoice payment")
         store.save_tabular_review_view(
             review["id"],
-            name="Vista importi e scadenze",
+            name="Amounts and Deadlines View",
             filter_text="",
             sort_key="document",
             columns=review.get("columns") or [],
         )
         store.create_custom_workflow_pack(
-            label="Demo recupero credito",
-            match_terms=["recupero credito", "decreto ingiuntivo", "fattura"],
+            label="Debt Recovery Workflow",
+            match_terms=["debt recovery", "payment order", "invoice", "recupero credito"],
             requirements=[
                 {
-                    "id": "fattura",
-                    "label": "Fattura o prova del credito",
-                    "fact_terms": ["fattura", "importo"],
-                    "document_terms": ["fattura", "euro", "credito"],
+                    "id": "invoice",
+                    "label": "Invoice or Proof of Debt",
+                    "fact_terms": ["invoice", "amount", "fattura"],
+                    "document_terms": ["invoice", "debt", "amount", "credito"],
                     "required": True,
-                    "suggestion": "Caricare fattura, estratto conto o contratto.",
+                    "suggestion": "Upload invoice, statement of account, or contract.",
                 },
                 {
-                    "id": "messa_in_mora",
-                    "label": "Sollecito o diffida",
-                    "fact_terms": ["diffida", "sollecito"],
-                    "document_terms": ["diffida", "sollecito", "mora"],
+                    "id": "notice_of_default",
+                    "label": "Demand Letter or Default Notice",
+                    "fact_terms": ["demand", "reminder", "notice", "diffida"],
+                    "document_terms": ["demand", "notice", "default", "sollecito"],
                     "required": False,
-                    "suggestion": "Caricare la diffida o indicare la data del sollecito.",
+                    "suggestion": "Upload demand letter or record date of payment reminder.",
                 },
             ],
         )
         store.save_custom_draft_template(
-            title="Diffida pagamento demo",
-            name="diffida_pagamento_demo",
+            title="Formal Payment Demand Letter",
+            name="formal_demand_letter_demo",
             body=(
-                "Spett.le {debitore},\n\n"
-                "Con la presente {creditore} Vi invita al pagamento di Euro {importo} "
-                "entro {termine}, salvo ogni diritto.\n"
+                "To: {debtor}\n\n"
+                "Please be advised that {creditor} hereby demands immediate payment of ${amount} "
+                "due by {deadline}, reserving all rights and legal remedies.\n"
             ),
-            required_params=["creditore", "debitore", "importo", "termine"],
+            required_params=["creditor", "debtor", "amount", "deadline"],
         )
         print(
-            f"Demo creata in {db_path}. Matter: {matter['id']}. Documento: {document['id']}."
+            f"Demo created in {db_path}. Matter: {matter['id']}. Document: {document['id']}."
         )
     return 0
 
