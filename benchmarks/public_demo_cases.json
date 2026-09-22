@@ -21,6 +21,17 @@
         "messa in mora",
         "decreto ingiuntivo"
       ]
+    },
+    {
+      "id": "debt_recovery_b2b_en",
+      "question": "A client needs to recover 8,500 euros for three unpaid invoices. First give me questions on missing data, then documentary checklist, procedural risks, operational strategy, and a draft notice.",
+      "expected_terms": [
+        "Points to Clarify",
+        "Documentary Checklist",
+        "Procedural Risks",
+        "Operational Strategy",
+        "Draft Legal Notice"
+      ]
     }
   ]
 }
