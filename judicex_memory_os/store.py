@@ -33,6 +33,7 @@ class LegalMemoryStore:
         self.conn.execute("PRAGMA foreign_keys = ON")
         try:
             self.conn.execute("PRAGMA journal_mode = WAL")
+            self.conn.execute("PRAGMA synchronous = NORMAL")
         except sqlite3.OperationalError:
             pass
         self.fts_enabled = False
